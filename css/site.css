@@ -149,10 +149,14 @@ img { display: block; }
 }
 .btn-store img { width: 16.7px; height: 16.7px; margin: 0 1px 1px; }
 
-/* The app window: a 1440 × 900 Mac screen shown at 948 px wide (scale set by hero.js). */
+/* The app window: a 1440 × 900 Mac screen shown at 948 px wide (scale set by hero.js).
+   .app-frame holds the window and, on top, an unclipped layer for cursors. */
+.app-frame { position: relative; width: min(948.5px, 100% - 32px); }
+.cursor-layer { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
+.cursor-scale { position: absolute; left: 0; top: 0; width: 1440px; height: 900px; transform-origin: 0 0; transform: scale(var(--app-scale, 0.6587)); }
 .app-window {
   position: relative;
-  width: min(948.5px, 100% - 32px);
+  width: 100%;
   aspect-ratio: 1440 / 900;
   border-radius: 9.2px;
   overflow: hidden;
@@ -230,6 +234,17 @@ img { display: block; }
   transition: opacity 200ms var(--ease-out), scale 380ms var(--ease-pop), translate 420ms var(--ease-out);
 }
 .blink-caret { animation: caret 1s steps(1) infinite; }
+/* Dynamic text being typed: each word shows as its letters arrive */
+.anim .screen [data-typewords] > * { min-width: 0.5em; }
+.anim .screen [data-typewords] > .is-typing::after {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.85em;
+  margin-left: 3px;
+  vertical-align: -0.08em;
+  background: currentColor;
+}
 
 /* Cursors of people working in the note (Figma "Notes App" › Frame 100 › Frame 106).
    Drawn at page size: the body is scaled back up against the window's shrink, so they
@@ -237,7 +252,7 @@ img { display: block; }
 .cursor { position: absolute; left: 0; top: 0; z-index: 20; pointer-events: none; opacity: 0; transition: opacity 200ms ease; }
 .cursor.is-on { opacity: 1; }
 .cursor-x, .cursor-y { will-change: transform; }
-.cursor-body { position: relative; margin: -7px 0 0 -7px; transform-origin: 7px 7px; scale: calc(1 / var(--app-scale, 0.6587)); }
+.cursor-body { position: relative; margin: -7px 0 0 -7px; transform-origin: 7px 7px; scale: calc(0.78 / var(--app-scale, 0.6587)); }
 .cursor-arrow { display: block; width: 27.4px; height: 28.4px; transform-origin: 7px 7px; transition: scale 160ms var(--ease-out); }
 .cursor.is-pressing .cursor-arrow { scale: 0.82; transition-duration: 80ms; }
 .cursor-tag {
@@ -255,7 +270,6 @@ img { display: block; }
 .cursor-tag.is-cyan { background: #41e8ff; color: #000000; }
 .cursor-tag.is-pink { background: #ff5ad7; color: #ffffff; }
 .cursor-tag.is-blue { background: #7cd4fd; color: rgba(0, 0, 0, 0.8); }
-.cursor.is-flipped .cursor-tag { left: auto; right: 6px; }
 [data-pub] { transition: background-color 200ms ease, color 200ms ease, transform 160ms var(--ease-out); }
 [data-pub].is-pressed { transform: scale(0.95); }
 [data-pub].is-busy { background: #f0f0f0 !important; color: #8f8f8f !important; }

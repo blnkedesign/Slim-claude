@@ -52,6 +52,7 @@
           <button type="button" aria-label="Publishing"></button>
         </div>
 
+        <div class="app-frame">
         <div class="app-window" role="img" aria-label="The Slimnote Mac app, showing notes being made">
           <div class="app-scale">
 <div class="screen" data-note="cover" aria-hidden="true">
@@ -268,7 +269,7 @@
         <p style="margin: 18px 0 0; font-size: 20px; line-height: 1.4; letter-spacing: -0.45px;">Rooftop, string lights, a cake that almost didn’t make it up the stairs.</p>
       </div>
       <!-- Scrapbook gallery, selected -->
-      <div style="position: relative; width: 760px; height: 470px; margin: 26px auto 0; border-radius: 12px; overflow: hidden; background-color: #e6d6ba; background-image: radial-gradient(rgba(90,60,20,0.12) 1px, transparent 1.2px); background-size: 7px 7px; box-shadow: inset 0 0 0 2px #0d0d0d;">
+      <div style="position: relative; width: 760px; height: 470px; margin: 26px auto 0; border-radius: 12px; overflow: hidden; background-color: #f6f6f2; background-image: linear-gradient(rgba(70,90,160,0.16) 1px, transparent 1px), linear-gradient(90deg, rgba(70,90,160,0.16) 1px, transparent 1px); background-size: 28px 28px; box-shadow: inset 0 0 0 2px #0d0d0d;">
         <span style="position: absolute; left: 12px; top: 12px; z-index: 6; padding: 3px 8px; border-radius: 6px; background: #0d0d0d; color: #ffffff; font-size: 11px; font-weight: 500;">Gallery · scrapbook</span>
         <!-- torn note -->
         <div style="position: absolute; left: 34px; top: 54px; width: 190px; padding: 18px 16px 22px; background: #fffdf6; transform: rotate(-5deg); box-shadow: 0 6px 16px rgba(0,0,0,0.12); clip-path: polygon(0 4%, 8% 0, 18% 3%, 30% 0, 44% 2%, 58% 0, 72% 3%, 86% 0, 100% 2%, 100% 100%, 0 100%);">
@@ -320,8 +321,8 @@
       <div style="font-size: 12px; color: #5d5d5d; padding: 10px 2px 6px;">Paper</div>
       <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;">
         <span style="height: 34px; border-radius: 7px; background: #ffffff; border: 1px solid rgba(0,0,0,0.1);"></span>
-        <span style="height: 34px; border-radius: 7px; background-color: #e6d6ba; background-image: radial-gradient(rgba(90,60,20,0.2) 1px, transparent 1.2px); background-size: 5px 5px; box-shadow: 0 0 0 2px #ffffff, 0 0 0 3px #0d0d0d;"></span>
-        <span style="height: 34px; border-radius: 7px; background-color: #f6f6f2; background-image: linear-gradient(rgba(70,90,160,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(70,90,160,0.2) 1px, transparent 1px); background-size: 8px 8px; border: 1px solid rgba(0,0,0,0.1);"></span>
+        <span style="height: 34px; border-radius: 7px; background-color: #e6d6ba; background-image: radial-gradient(rgba(90,60,20,0.2) 1px, transparent 1.2px); background-size: 5px 5px; border: 1px solid rgba(0,0,0,0.1);"></span>
+        <span style="height: 34px; border-radius: 7px; background-color: #f6f6f2; background-image: linear-gradient(rgba(70,90,160,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(70,90,160,0.2) 1px, transparent 1px); background-size: 8px 8px; box-shadow: 0 0 0 2px #ffffff, 0 0 0 3px #0d0d0d;"></span>
         <span style="height: 34px; border-radius: 7px; background: #fbd9e3; border: 1px solid rgba(0,0,0,0.1);"></span>
       </div>
       <div style="font-size: 12px; color: #5d5d5d; padding: 14px 2px 6px;">Frames</div>
@@ -407,7 +408,7 @@
         <h1 style="margin: 24px 0 0; font-family: 'Instrument Serif', ui-serif, Georgia, serif; font-weight: 400; font-size: 88px; line-height: 0.95; letter-spacing: -2.5px;">Year one</h1>
         <!-- Dynamic text · Classic (selected) -->
         <div style="position: relative; margin-top: 26px; padding: 6px 0;">
-          <div data-seq="230" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 8px; line-height: 1;">
+          <div data-typewords style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 8px; line-height: 1;">
             <span style="padding: 6px 12px; border-radius: 8px; background: #fff0b0; font-family: -apple-system, 'SF Pro Display', 'Inter', system-ui, sans-serif; font-weight: 800; font-size: 40px; letter-spacing: 1px; transform: rotate(-0.6deg);">THE</span>
             <span style="padding: 6px 12px; border-radius: 8px; background: #eee3ff; font-family: -apple-system, 'SF Pro Display', 'Inter', system-ui, sans-serif; font-weight: 800; font-size: 40px; letter-spacing: 1px; transform: rotate(0.5deg);">BIGGEST</span>
             <span style="padding: 8px 16px; border-radius: 10px; background: #0d0d0d; color: #ffffff; font-family: -apple-system, 'SF Pro Display', 'Inter', system-ui, sans-serif; font-weight: 800; font-size: 54px; letter-spacing: 1.5px; transform: rotate(-0.4deg);">LESSONS</span>
@@ -417,7 +418,7 @@
         </div>
         <p style="margin: 26px 0 0; font-size: 18px; line-height: 1.55; color: #1f1f1f;">Twelve months of four a.m. alarms, burnt crusts and a line out the door. Here’s what we’d tell ourselves on day one.</p>
         <!-- Dynamic text · Scrapbook -->
-        <div data-seq="230" style="margin-top: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 10px; line-height: 1;">
+        <div data-typewords style="margin-top: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 10px; line-height: 1;">
           <span style="padding: 6px 12px 8px; background: #f3d9c9; color: #3a2a20; font-family: 'Instrument Serif', Georgia, serif; font-size: 44px; transform: rotate(-2deg); box-shadow: 0 0 0 3px #ffffff, 0 4px 10px rgba(0,0,0,0.18);">bake</span>
           <span style="padding: 6px 12px 8px; background: #ffffff; color: #2f55b0; font-family: 'Arial Black', 'Helvetica Neue', sans-serif; font-weight: 900; font-size: 40px; transform: rotate(1.5deg); box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.18);">less,</span>
           <span style="padding: 8px 14px 10px; background: #111111; color: #ffffff; font-family: 'Courier New', ui-monospace, monospace; font-weight: 700; font-size: 46px; transform: rotate(-1deg); box-shadow: 0 0 0 3px #ffffff, 0 4px 10px rgba(0,0,0,0.2);">sell</span>
@@ -705,6 +706,8 @@
 <div data-cursor="Sam" class="cursor" aria-hidden="true"><div class="cursor-x"><div class="cursor-y"><div class="cursor-body"><img class="cursor-arrow" src="assets/img/cursor-cyan.svg" width="27" height="28" alt=""><span class="cursor-tag is-cyan">Sam</span></div></div></div></div>
 </div>
           </div>
+        </div>
+        <div class="cursor-layer" aria-hidden="true"><div class="cursor-scale"></div></div>
         </div>
       </div>
     </div>

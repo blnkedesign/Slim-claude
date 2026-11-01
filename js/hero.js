@@ -23,6 +23,7 @@
 
   /* Timing (ms) */
   var TYPE = 26;          // average per letter of a title
+  var TYPE_WORD = 30;     // per letter in dynamic text
   var GAP = 150;          // between plain blocks
   var PIECE = 0.6;        // [data-seq] steps are scaled by this (attribute values are the design pace)
   var OVERLAP = 0.35;     // the next block starts this share of a piece run before it ends
@@ -45,7 +46,8 @@
   function later(fn, ms) { pending.push(setTimeout(fn, ms)); }
   function clearPending() { pending.forEach(clearTimeout); pending = []; clearTimeout(typing); }
 
-  function fit() { scaleBox.style.setProperty('--app-scale', (win.clientWidth / 1440).toFixed(4)); }
+  // The scale lives on the hero, so the window and the cursor layer above it share it.
+  function fit() { root.style.setProperty('--app-scale', (win.clientWidth / 1440).toFixed(4)); }
   fit();
   if ('ResizeObserver' in window) new ResizeObserver(fit).observe(win);
   else window.addEventListener('resize', fit);
@@ -57,6 +59,13 @@
     var k = s.width / 1440 || 1;
     return { x: (r.left - s.left) / k, y: (r.top - s.top) / k, w: r.width / k, h: r.height / k };
   }
+  /* Cursors live in a layer above the window, so a name tag near the edge is never cut off. */
+  var cursorLayer = root.querySelector('.cursor-scale');
+  screens.forEach(function (s) {
+    var el = s.querySelector('.cursor');
+    if (el && cursorLayer) { cursorLayer.appendChild(el); s._cursorEl = el; }
+  });
+
   function cancelAnims(el) { el.getAnimations().forEach(function (a) { a.cancel(); }); }
 
   /* ---------- blocks ---------- */
@@ -77,9 +86,10 @@
     screen._panel = screen.querySelector('[data-panel]');
     if (screen._panel) screen._panel.classList.add('b-item');
     screen.querySelectorAll('[data-late]').forEach(function (el) { el.classList.add('b-late'); });
-    screen.querySelectorAll('[data-seq]').forEach(function (box) {
+    screen.querySelectorAll('[data-seq], [data-typewords]').forEach(function (box) {
       Array.prototype.forEach.call(box.children, function (c) { c.classList.add('seq-item'); });
     });
+    screen.querySelectorAll('[data-typewords] > *').forEach(function (w) { w.setAttribute('data-text', w.textContent); });
     var h = screen.querySelector('[data-card] h1');
     if (h && !h.children.length) { screen._title = h; h.setAttribute('data-full', h.textContent); }
   }
@@ -88,6 +98,23 @@
     screen._blocks.concat(screen._panel ? [screen._panel] : []).forEach(function (el) { el.classList.remove('b-in'); });
     screen.querySelectorAll('.seq-item, .b-late').forEach(function (el) { el.classList.remove('seq-in', 'b-in'); });
     if (screen._title) screen._title.textContent = screen._title.getAttribute('data-full');
+    screen.querySelectorAll('[data-typewords] > *').forEach(function (w) { w.textContent = w.getAttribute('data-text'); w.classList.remove('is-typing'); });
+  }
+
+  /* Dynamic text: each word appears and its letters type in, one word after another. */
+  function typeWords(box, at) {
+    var t = at;
+    Array.prototype.forEach.call(box.children, function (w) {
+      var word = w.getAttribute('data-text');
+      var start = t;
+      later(function () { w.textContent = ''; w.classList.add('seq-in', 'is-typing'); }, start);
+      for (var i = 1; i <= word.length; i++) {
+        (function (i) { later(function () { w.textContent = word.slice(0, i); }, start + i * TYPE_WORD); })(i);
+      }
+      later(function () { w.classList.remove('is-typing'); }, start + word.length * TYPE_WORD + 40);
+      t = start + word.length * TYPE_WORD + 70;
+    });
+    return t - at;
   }
 
   /* Type a title with a slight human rhythm. Returns how long it takes. */
@@ -132,6 +159,13 @@
         t += 140 + typeTitle(screen._title, at + 140) + 120;
         return;
       }
+      var typed = el.matches('[data-typewords]') ? [el] : Array.prototype.slice.call(el.querySelectorAll('[data-typewords]'));
+      if (typed.length) {
+        var s2 = at + 160;
+        typed.forEach(function (box) { s2 += typeWords(box, s2); });
+        t = s2 + 80;
+        return;
+      }
       var boxes = el.matches('[data-seq]') ? [el] : Array.prototype.slice.call(el.querySelectorAll('[data-seq]'));
       if (boxes.length) {
         var s = at + 200, run = 0;
@@ -166,21 +200,18 @@
     this.ax.style.transform = 'translateX(' + x + 'px)';
     this.ay.style.transform = 'translateY(' + y + 'px)';
     this.el.classList.remove('is-on', 'is-pressing');
-    this.flipNear(x);
   };
-  Cursor.prototype.flipNear = function (x) { this.el.classList.toggle('is-flipped', x > 1240); };
   Cursor.prototype.moveTo = function (x, y, ms, sameCurve) {
     var d = Math.hypot(x - this.x, y - this.y);
     ms = ms || Math.round(Math.min(760, 420 + d * 0.32));
     this.ax.animate([{ transform: 'translateX(' + this.x + 'px)' }, { transform: 'translateX(' + x + 'px)' }], { duration: ms, easing: EASE_IN_OUT, fill: 'forwards' });
     this.ay.animate([{ transform: 'translateY(' + this.y + 'px)' }, { transform: 'translateY(' + y + 'px)' }], { duration: ms, easing: sameCurve ? EASE_IN_OUT : EASE_Y, fill: 'forwards' });
     this.x = x; this.y = y;
-    this.flipNear(x);
     return ms;
   };
   Cursor.prototype.press = function (on) { this.el.classList.toggle('is-pressing', on); };
   function cursorOf(screen) {
-    var el = screen.querySelector('.cursor');
+    var el = screen._cursorEl;
     if (!el) return null;
     if (!el._c) el._c = new Cursor(el);
     return el._c;
@@ -295,7 +326,7 @@
         var shift = -(from.h + 6);
         Array.prototype.forEach.call(doingList.children, function (sib) {
           if (sib === card) return;
-          sib.animate([{ translate: '0px 0px' }, { translate: '0px ' + shift + 'px' }], { duration: 260, delay: 140, easing: EASE_OUT, fill: 'forwards' });
+          sib.animate([{ translate: '0px 0px' }, { translate: '0px ' + shift + 'px' }], { duration: 340, delay: DRAG * 0.45, easing: EASE_OUT, fill: 'forwards' });
         });
       }, travel + 160);
 
@@ -330,6 +361,9 @@
     screens.forEach(function (s) { s.setAttribute('aria-hidden', s === next ? 'false' : 'true'); });
     dots.forEach(function (d, i) { d.setAttribute('aria-current', i === current ? 'true' : 'false'); });
 
+    screens.forEach(function (s) {
+      if (s !== next && s._cursorEl) { s._cursorEl.classList.remove('is-on', 'is-pressing'); }
+    });
     setup(next);
     resetScreen(next);
     void next.offsetWidth;
