@@ -27,7 +27,9 @@ then visit http://localhost:8090.
 - The window is a full 1440 × 900 Mac screen, scaled down to fit (about 948 px wide on desktop).
 - Five notes take turns: photo cover + process, scrapbook gallery, dynamic text, tasks + canvas, publishing.
 - Each note is written in order on one timeline: the title types, then each block arrives; dynamic words, process steps and board columns appear one by one before the next block starts. A note stays until it's done, plus a short pause.
-- Jake drags a task from Doing to Done. Sam clicks Publish: Publishing…, Updated, then the popover and the toast.
+- Chloe places a sticker in the scrapbook. Jake drags a task from Doing to Done and the board rearranges (cards close the gap, counts update, the canvas eases down). Sam clicks Publish: Publishing…, Updated, then the popover and the toast.
+- Cursors are the three designs from Figma (Frame 100 › Frame 106): `assets/img/cursor-cyan.svg` (Sam), `cursor-pink.svg` (Jake), `cursor-blue.svg` (Chloe).
+- Motion uses three curves from `css/site.css`: `--ease-out` for things arriving, `--ease-in-out` for cursors and drags, `--ease-pop` for word chips.
 - Cursors move like a hand: quick start, long soft landing, slightly curved paths. Notes glide in and out.
 - The dots in the corner jump to a note.
 - It pauses when the hero is off screen or the tab is hidden.

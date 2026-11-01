@@ -1,13 +1,14 @@
 /* Slimnote hero: the app window shows one note after another, each written in order.
  *
  *  - Every note is a .screen inside .app-scale (a 1440 × 900 Mac screen, scaled to fit the window).
- *  - One timeline per note: the title types, then each block arrives in turn; blocks with pieces
- *    ([data-seq]: dynamic words, process steps, board columns) show their pieces one by one before
- *    the next block starts.
- *  - Then a small scene, if the note has one: Jake drags a task to Done; Sam clicks Publish.
- *  - Cursors move like a hand: quick start, long soft landing, and a slightly curved path.
+ *  - One timeline per note: the title types, then each block arrives in turn. Blocks with pieces
+ *    ([data-seq]: dynamic words, process steps, board columns) reveal them one by one; the next
+ *    block starts while the last pieces are still landing, so the note keeps flowing.
+ *  - Then a small scene, if the note has one: Chloe places a sticker, Jake drags a task to Done
+ *    (the board rearranges like the real app), Sam clicks Publish.
+ *  - Cursors move like a hand: quick start, soft landing, slightly curved paths.
  *  - Pauses while the hero is off screen or the tab is hidden; the dots jump to a note.
- *  - With "reduce motion" on, everything appears with plain fades and the cursors stay still.
+ *  - With "reduce motion" on, everything appears with plain fades and cursors stay hidden.
  */
 (function () {
   var root = document.querySelector('[data-hero]');
@@ -20,16 +21,20 @@
   var video = root.querySelector('.hero-video');
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Timing (ms)
-  var TYPE = 38;          // per letter of a title
-  var GAP = 260;          // between plain blocks
-  var AFTER = 2600;       // how long a finished note stays before the next
-  var MIN_HOLD = 5200;
+  /* Timing (ms) */
+  var TYPE = 26;          // average per letter of a title
+  var GAP = 150;          // between plain blocks
+  var PIECE = 0.6;        // [data-seq] steps are scaled by this (attribute values are the design pace)
+  var OVERLAP = 0.35;     // the next block starts this share of a piece run before it ends
+  var AFTER = 1600;       // how long a finished note stays
+  var MIN_HOLD = 4200;
 
-  // Easing
-  var EASE_X = 'cubic-bezier(0.7, 0, 0.18, 1)';   // sharp in, long settle
-  var EASE_Y = 'cubic-bezier(0.38, 0, 0.12, 1)';  // a touch earlier: bends the path
-  var EASE_DRAG = 'cubic-bezier(0.65, 0, 0.2, 1)';
+  /* Curves come from the stylesheet, so CSS and JS move alike. */
+  var css = getComputedStyle(document.documentElement);
+  var EASE_OUT = css.getPropertyValue('--ease-out').trim() || 'cubic-bezier(0.23, 1, 0.32, 1)';
+  var EASE_IN_OUT = css.getPropertyValue('--ease-in-out').trim() || 'cubic-bezier(0.77, 0, 0.175, 1)';
+  // For cursors, y leads x slightly: the path bends like a hand's.
+  var EASE_Y = 'cubic-bezier(0.55, 0, 0.12, 1)';
 
   var current = -1;
   var timer = null;
@@ -38,9 +43,8 @@
   var visible = true;
 
   function later(fn, ms) { pending.push(setTimeout(fn, ms)); }
-  function clearPending() { pending.forEach(clearTimeout); pending = []; clearInterval(typing); }
+  function clearPending() { pending.forEach(clearTimeout); pending = []; clearTimeout(typing); }
 
-  /* Fit the 1440 px screen into the window. */
   function fit() { scaleBox.style.setProperty('--app-scale', (win.clientWidth / 1440).toFixed(4)); }
   fit();
   if ('ResizeObserver' in window) new ResizeObserver(fit).observe(win);
@@ -53,6 +57,7 @@
     var k = s.width / 1440 || 1;
     return { x: (r.left - s.left) / k, y: (r.top - s.top) / k, w: r.width / k, h: r.height / k };
   }
+  function cancelAnims(el) { el.getAnimations().forEach(function (a) { a.cancel(); }); }
 
   /* ---------- blocks ---------- */
   function setup(screen) {
@@ -63,7 +68,7 @@
       Array.prototype.forEach.call(card.children, function (el) {
         if (el.hasAttribute('data-late')) return;
         if (el.children.length > 2 && el.style.width) {
-          Array.prototype.forEach.call(el.children, function (c) { list.push(c); });
+          Array.prototype.forEach.call(el.children, function (c) { if (!c.hasAttribute('data-place')) list.push(c); });
         } else list.push(el);
       });
     }
@@ -85,6 +90,7 @@
     if (screen._title) screen._title.textContent = screen._title.getAttribute('data-full');
   }
 
+  /* Type a title with a slight human rhythm. Returns how long it takes. */
   function typeTitle(h, at) {
     var full = h.getAttribute('data-full');
     if (reduce) { h.textContent = full; return 0; }
@@ -94,25 +100,28 @@
     caret.className = 'type-caret';
     h.appendChild(text);
     h.appendChild(caret);
-    var i = 0;
-    later(function () {
-      clearInterval(typing);
-      typing = setInterval(function () {
-        i += 1;
-        text.nodeValue = full.slice(0, i);
-        if (i >= full.length) {
-          clearInterval(typing);
-          later(function () { if (caret.parentNode) caret.parentNode.removeChild(caret); }, 700);
-        }
-      }, TYPE);
-    }, at);
-    return full.length * TYPE;
+    // A fixed rhythm per title (same every loop): quicker inside words, a beat at spaces.
+    var gaps = [], total = 0, seed = full.length * 7;
+    for (var i = 0; i < full.length; i++) {
+      seed = (seed * 9301 + 49297) % 233280;
+      var g = TYPE * (0.65 + (seed / 233280) * 0.6) + (full[i] === ' ' ? TYPE * 1.4 : 0);
+      gaps.push(g); total += g;
+    }
+    var n = 0;
+    function step() {
+      n += 1;
+      text.nodeValue = full.slice(0, n);
+      if (n < full.length) typing = setTimeout(step, gaps[n]);
+      else later(function () { if (caret.parentNode) caret.parentNode.removeChild(caret); }, 600);
+    }
+    later(function () { typing = setTimeout(step, gaps[0]); }, at);
+    return total;
   }
 
   /* Lay the note out on one timeline. Returns when everything is written. */
   function writeNote(screen) {
-    var t = reduce ? 0 : 260;
-    if (screen._panel) later(function () { screen._panel.classList.add('b-in'); }, reduce ? 0 : 120);
+    var t = reduce ? 0 : 180;
+    if (screen._panel) later(function () { screen._panel.classList.add('b-in'); }, reduce ? 0 : 60);
 
     screen._blocks.forEach(function (el) {
       var at = t;
@@ -120,29 +129,28 @@
       if (reduce) return;
 
       if (screen._title && el.contains(screen._title)) {
-        t += 220 + typeTitle(screen._title, at + 220) + 260;
+        t += 140 + typeTitle(screen._title, at + 140) + 120;
         return;
       }
       var boxes = el.matches('[data-seq]') ? [el] : Array.prototype.slice.call(el.querySelectorAll('[data-seq]'));
       if (boxes.length) {
-        var s = at + 320;
+        var s = at + 200, run = 0;
         boxes.forEach(function (box) {
-          var step = parseInt(box.getAttribute('data-seq'), 10) || 200;
+          var step = (parseInt(box.getAttribute('data-seq'), 10) || 200) * PIECE;
           Array.prototype.forEach.call(box.children, function (c, i) {
             later(function () { c.classList.add('seq-in'); }, s + i * step);
           });
-          s += box.children.length * step;
+          run = box.children.length * step;
+          s += run;
         });
-        t = s + 200;
+        t = s - run * OVERLAP;
         return;
       }
       t += GAP;
     });
 
-    if (reduce) {
-      screen.querySelectorAll('.seq-item').forEach(function (c) { later(function () { c.classList.add('seq-in'); }, 0); });
-    }
-    return t + 300;
+    if (reduce) screen.querySelectorAll('.seq-item').forEach(function (c) { c.classList.add('seq-in'); });
+    return t + 250;
   }
 
   /* ---------- cursors ---------- */
@@ -153,30 +161,58 @@
     this.ay = el.querySelector('.cursor-y');
   }
   Cursor.prototype.place = function (x, y) {
-    this.ax.getAnimations().forEach(function (a) { a.cancel(); });
-    this.ay.getAnimations().forEach(function (a) { a.cancel(); });
+    cancelAnims(this.ax); cancelAnims(this.ay);
     this.x = x; this.y = y;
     this.ax.style.transform = 'translateX(' + x + 'px)';
     this.ay.style.transform = 'translateY(' + y + 'px)';
     this.el.classList.remove('is-on', 'is-pressing');
     this.flipNear(x);
   };
-  Cursor.prototype.moveTo = function (x, y, ms, ex, ey) {
+  Cursor.prototype.flipNear = function (x) { this.el.classList.toggle('is-flipped', x > 1240); };
+  Cursor.prototype.moveTo = function (x, y, ms, sameCurve) {
     var d = Math.hypot(x - this.x, y - this.y);
-    ms = ms || Math.min(1300, 520 + d * 0.55);
-    this.ax.animate([{ transform: 'translateX(' + this.x + 'px)' }, { transform: 'translateX(' + x + 'px)' }], { duration: ms, easing: ex || EASE_X, fill: 'forwards' });
-    this.ay.animate([{ transform: 'translateY(' + this.y + 'px)' }, { transform: 'translateY(' + y + 'px)' }], { duration: ms, easing: ey || EASE_Y, fill: 'forwards' });
+    ms = ms || Math.round(Math.min(760, 420 + d * 0.32));
+    this.ax.animate([{ transform: 'translateX(' + this.x + 'px)' }, { transform: 'translateX(' + x + 'px)' }], { duration: ms, easing: EASE_IN_OUT, fill: 'forwards' });
+    this.ay.animate([{ transform: 'translateY(' + this.y + 'px)' }, { transform: 'translateY(' + y + 'px)' }], { duration: ms, easing: sameCurve ? EASE_IN_OUT : EASE_Y, fill: 'forwards' });
     this.x = x; this.y = y;
     this.flipNear(x);
     return ms;
   };
-  Cursor.prototype.flipNear = function (x) { this.el.classList.toggle('is-flipped', x > 1240); };
   Cursor.prototype.press = function (on) { this.el.classList.toggle('is-pressing', on); };
   function cursorOf(screen) {
     var el = screen.querySelector('.cursor');
     if (!el) return null;
     if (!el._c) el._c = new Cursor(el);
     return el._c;
+  }
+
+  /* Chloe places a sticker in the scrapbook. */
+  function placeScene(screen, at) {
+    var sticker = screen.querySelector('[data-place]');
+    var c = cursorOf(screen);
+    if (!sticker || !c) return 0;
+    cancelAnims(sticker);
+    sticker.style.opacity = '0';
+    c.place(1120, 640);
+    if (reduce) { later(function () { sticker.style.opacity = '1'; }, at); return 600; }
+
+    var DX = 330, DY = 120, ms = 720;
+    later(function () {
+      var r = rectIn(screen, sticker);
+      var tx = r.x + r.w * 0.45, ty = r.y + r.h * 0.4;
+      c.place(tx + DX, ty + DY);
+      c.el.classList.add('is-on');
+      c.press(true);
+      sticker.style.opacity = '1';
+      sticker.animate([{ translate: DX + 'px ' + DY + 'px', scale: 1.12 }, { translate: '0px 0px', scale: 1.12 }], { duration: ms, easing: EASE_IN_OUT, fill: 'forwards' });
+      c.moveTo(tx, ty, ms, true);
+      later(function () {
+        c.press(false);
+        sticker.animate([{ translate: '0px 0px', scale: 1.12 }, { translate: '0px 0px', scale: 1 }], { duration: 320, easing: 'cubic-bezier(0.34, 1.45, 0.64, 1)', fill: 'forwards' });
+      }, ms + 40);
+      later(function () { c.moveTo(tx - 170, ty - 150); }, ms + 380);
+    }, at);
+    return ms + 1100;
   }
 
   /* Sam clicks Publish; the page goes live. */
@@ -191,69 +227,96 @@
     btn.classList.remove('is-busy', 'is-pressed');
     btn.textContent = 'Publish';
     if (label) label.style.opacity = '0';
-    c.place(720, 660);
+    c.place(760, 640);
 
     function goLive() {
       btn.classList.remove('is-busy');
       btn.innerHTML = CHECK + 'Updated';
       if (label) label.style.opacity = '1';
-      late.forEach(function (el, i) { later(function () { el.classList.add('b-in'); }, i * 380); });
+      late.forEach(function (el, i) { later(function () { el.classList.add('b-in'); }, i * 260); });
     }
-    if (reduce) { later(goLive, at); return 1500; }
+    if (reduce) { later(goLive, at); return 1200; }
 
-    var tx = 0, ty = 0;
-    later(function () { c.el.classList.add('is-on'); }, at);
-    var travel = 1100;
+    var tx = 0, ty = 0, travel = 0;
     later(function () {
-      var b = rectIn(screen, btn); // measured now, once the note has settled
+      c.el.classList.add('is-on');
+      var b = rectIn(screen, btn);
       tx = b.x + b.w * 0.4; ty = b.y + b.h * 0.55;
-      c.moveTo(tx, ty, travel);
-    }, at + 200);
-    var click = at + 200 + travel + 140;
-    later(function () { c.press(true); btn.classList.add('is-pressed'); }, click);
-    later(function () { c.press(false); btn.classList.remove('is-pressed'); btn.classList.add('is-busy'); btn.textContent = 'Publishing…'; }, click + 150);
-    later(goLive, click + 1050);
-    later(function () { c.moveTo(tx - 170, ty + 330, 1150); }, click + 1500);
-    return click + 2900 - at;
+      travel = c.moveTo(tx, ty);
+      later(function () { c.press(true); btn.classList.add('is-pressed'); }, travel + 60);
+      later(function () { c.press(false); btn.classList.remove('is-pressed'); btn.classList.add('is-busy'); btn.textContent = 'Publishing…'; }, travel + 170);
+      later(goLive, travel + 820);
+      later(function () { c.moveTo(tx - 160, ty + 300); }, travel + 1150);
+    }, at);
+    return 760 + 2100;
   }
 
-  /* Jake drags a task from Doing to Done. */
+  /* Jake drags a task from Doing to Done; the board rearranges around it. */
   function dragScene(screen, at) {
     var card = screen.querySelector('[data-drag]');
     var c = cursorOf(screen);
     if (!card || !c) return 0;
-    card.getAnimations().forEach(function (a) { a.cancel(); });
+    var board = card.closest('[data-seq]');
+    var doingList = board && board.children[1].children[1];
+    var doneList = board && board.children[2].children[1];
+    if (!doneList) return 0;
+    var count = function (col) { return board.children[col].children[0].querySelector('span[style*="font-weight: 400"]'); };
+    var below = board.parentElement.nextElementSibling; // the canvas under the board
+
+    // Back to the start: the card first in Doing, counts as designed.
+    cancelAnims(card);
     card.classList.remove('is-lifted');
+    if (card.parentElement !== doingList) doingList.insertBefore(card, doingList.firstChild);
+    Array.prototype.forEach.call(doingList.children, cancelAnims);
+    if (below) cancelAnims(below);
+    if (count(1)) count(1).textContent = '2';
+    if (count(2)) count(2).textContent = '4';
     c.place(1010, 640);
     if (reduce) return 0;
 
-    var board = card.closest('[data-seq]');
-    var done = board && board.children[2];
-    var list = done && done.children[1];
-    if (!list) return 0;
-
-    var from, grab;
-    later(function () { c.el.classList.add('is-on'); }, at);
-    var travel = 1000;
+    var from, grab, dx, dy;
     later(function () {
-      from = rectIn(screen, card); // measured now, once the note has settled
+      c.el.classList.add('is-on');
+      from = rectIn(screen, card);
       grab = { x: from.x + from.w * 0.3, y: from.y + from.h * 0.5 };
-      c.moveTo(grab.x, grab.y, travel);
-    }, at + 200);
-    var lift = at + 200 + travel + 120;
-    later(function () { c.press(true); card.classList.add('is-lifted'); }, lift);
+      var travel = c.moveTo(grab.x, grab.y);
 
-    var drag = 1050;
-    later(function () {
-      var last = rectIn(screen, list.lastElementChild);
-      var dx = last.x - from.x;
-      var dy = last.y + last.h + 6 - from.y;
-      card.animate([{ translate: '0px 0px' }, { translate: dx + 'px ' + dy + 'px' }], { duration: drag, easing: EASE_DRAG, fill: 'forwards' });
-      c.moveTo(grab.x + dx, grab.y + dy, drag, EASE_DRAG, EASE_DRAG);
-    }, lift + 180);
-    later(function () { c.press(false); card.classList.remove('is-lifted'); }, lift + 180 + drag + 60);
-    later(function () { c.moveTo(c.x + 120, c.y + 150, 1000); }, lift + 180 + drag + 500);
-    return lift + 180 + drag + 1600 - at;
+      later(function () { c.press(true); card.classList.add('is-lifted'); }, travel + 60);
+
+      var DRAG = 640;
+      later(function () {
+        var last = rectIn(screen, doneList.lastElementChild);
+        dx = last.x - from.x;
+        dy = last.y + last.h + 6 - from.y;
+        card.animate([{ translate: '0px 0px' }, { translate: dx + 'px ' + dy + 'px' }], { duration: DRAG, easing: EASE_IN_OUT, fill: 'forwards' });
+        c.moveTo(grab.x + dx, grab.y + dy, DRAG, true);
+
+        // As it leaves Doing, the cards below slide up to close the gap.
+        var shift = -(from.h + 6);
+        Array.prototype.forEach.call(doingList.children, function (sib) {
+          if (sib === card) return;
+          sib.animate([{ translate: '0px 0px' }, { translate: '0px ' + shift + 'px' }], { duration: 260, delay: 140, easing: EASE_OUT, fill: 'forwards' });
+        });
+      }, travel + 160);
+
+      // Drop: the card really moves into Done; the board settles.
+      later(function () {
+        c.press(false);
+        card.classList.remove('is-lifted');
+        var beforeBelow = below ? rectIn(screen, below).y : 0;
+        cancelAnims(card);
+        Array.prototype.forEach.call(doingList.children, function (sib) { if (sib !== card) cancelAnims(sib); });
+        doneList.appendChild(card);
+        if (count(1)) count(1).textContent = '1';
+        if (count(2)) count(2).textContent = '5';
+        if (below) {
+          var delta = beforeBelow - rectIn(screen, below).y;
+          if (delta) below.animate([{ translate: '0px ' + delta + 'px' }, { translate: '0px 0px' }], { duration: 320, easing: EASE_OUT });
+        }
+        later(function () { c.moveTo(c.x + 120, c.y + 140); }, 220);
+      }, travel + 160 + DRAG + 40);
+    }, at);
+    return 760 + 1700;
   }
 
   /* ---------- switching notes ---------- */
@@ -274,14 +337,14 @@
     if (prev) {
       prev.classList.remove('is-on');
       prev.classList.add('is-leaving');
-      later(function () { prev.classList.remove('is-leaving'); }, 800);
+      later(function () { prev.classList.remove('is-leaving'); }, 450);
     }
     next.classList.add('is-on');
 
     var written = writeNote(next);
-    var scene = publishScene(next, written) || dragScene(next, written);
+    var scene = publishScene(next, written) || dragScene(next, written) || placeScene(next, written);
     if (!scene) {
-      next.querySelectorAll('.b-late').forEach(function (el, i) { later(function () { el.classList.add('b-in'); }, written + i * 450); });
+      next.querySelectorAll('.b-late').forEach(function (el, i) { later(function () { el.classList.add('b-in'); }, written + i * 300); });
     }
     next._hold = Math.max(MIN_HOLD, written + scene + AFTER);
   }
