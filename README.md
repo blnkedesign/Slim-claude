@@ -39,4 +39,8 @@ The five notes come from the design canvas ("Hero notes · options"). Each is a 
 
 ## Versions
 
-- `versions/v1/` keeps the first hero as reviewed (also tagged `hero-v1`). Open `versions/v1/index.html` to compare.
+- `versions/v1/`: the first hero as reviewed.
+- `versions/v2/`: Figma cursors, typed dynamic text, squared paper (approved 1 Nov 2026).
+- The main `index.html` is the latest (v3).
+
+Open any `versions/…/index.html` to compare.

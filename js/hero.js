@@ -282,7 +282,12 @@
     return 760 + 2100;
   }
 
-  /* Jake drags a task from Doing to Done; the board rearranges around it. */
+  /* Jake drags a task from Doing to Done; the board rearranges around it, like the real app:
+   *  1. lift: a floating copy follows the cursor; the card's own spot stays reserved (invisible)
+   *  2. once the copy has clearly left Doing, the spot moves to the end of Done:
+   *     the cards below in Doing glide up, Done grows, the canvas eases down
+   *  3. drop: the copy lands on the spot and the real card shows again
+   *  Every move is a plain transform, which every browser animates the same way. */
   function dragScene(screen, at) {
     var card = screen.querySelector('[data-drag]');
     var c = cursorOf(screen);
@@ -294,60 +299,80 @@
     var count = function (col) { return board.children[col].children[0].querySelector('span[style*="font-weight: 400"]'); };
     var below = board.parentElement.nextElementSibling; // the canvas under the board
 
-    // Back to the start: the card first in Doing, counts as designed.
-    cancelAnims(card);
-    card.classList.remove('is-lifted');
+    // Back to the start.
+    if (screen._ghost) { screen._ghost.remove(); screen._ghost = null; }
+    card.style.visibility = '';
     if (card.parentElement !== doingList) doingList.insertBefore(card, doingList.firstChild);
-    Array.prototype.forEach.call(doingList.children, cancelAnims);
-    if (below) cancelAnims(below);
+    [card, below].concat(Array.prototype.slice.call(doingList.children)).forEach(function (el) { if (el) cancelAnims(el); });
     if (count(1)) count(1).textContent = '2';
     if (count(2)) count(2).textContent = '4';
     c.place(1010, 640);
     if (reduce) return 0;
 
-    var from, grab, dx, dy;
+    // FLIP: remember where things are, change the layout, then glide from old to new.
+    function flip(els, change, ms) {
+      var before = els.map(function (el) { return el ? el.getBoundingClientRect().top : 0; });
+      change();
+      var k = screen.getBoundingClientRect().width / 1440 || 1;
+      els.forEach(function (el, i) {
+        if (!el) return;
+        var d = (before[i] - el.getBoundingClientRect().top) / k;
+        if (Math.abs(d) > 0.5) el.animate([{ transform: 'translateY(' + d + 'px)' }, { transform: 'translateY(0)' }], { duration: ms, easing: EASE_OUT });
+      });
+    }
+
+    var DRAG = 700;
     later(function () {
       c.el.classList.add('is-on');
-      from = rectIn(screen, card);
-      grab = { x: from.x + from.w * 0.3, y: from.y + from.h * 0.5 };
+      var from = rectIn(screen, card);
+      var grab = { x: from.x + from.w * 0.3, y: from.y + from.h * 0.5 };
       var travel = c.moveTo(grab.x, grab.y);
 
-      later(function () { c.press(true); card.classList.add('is-lifted'); }, travel + 60);
+      // 1. Lift: a copy floats above, the card's spot stays.
+      later(function () {
+        c.press(true);
+        var ghost = card.cloneNode(true);
+        ghost.removeAttribute('data-drag');
+        ghost.style.cssText += ';position: absolute; margin: 0; z-index: 30; pointer-events: none; left: ' + from.x + 'px; top: ' + from.y + 'px; width: ' + from.w + 'px; box-sizing: border-box;';
+        screen.appendChild(ghost);
+        screen._ghost = ghost;
+        card.style.visibility = 'hidden';
+        ghost.animate([{ transform: 'rotate(0deg)', boxShadow: '0 0 0 1px rgba(0,0,0,0.07)' }, { transform: 'rotate(-2.5deg)', boxShadow: '0 0 0 1px rgba(0,0,0,0.07), 0 16px 32px rgba(0,0,0,0.16)' }], { duration: 160, easing: EASE_OUT, fill: 'forwards' });
+      }, travel + 60);
 
-      var DRAG = 640;
+      // Where the card will land: just below the last card in Done.
+      var dx, dy;
       later(function () {
         var last = rectIn(screen, doneList.lastElementChild);
         dx = last.x - from.x;
         dy = last.y + last.h + 6 - from.y;
-        card.animate([{ translate: '0px 0px' }, { translate: dx + 'px ' + dy + 'px' }], { duration: DRAG, easing: EASE_IN_OUT, fill: 'forwards' });
+        var g = screen._ghost;
+        if (g) g.animate([{ transform: 'translate(0px, 0px) rotate(-2.5deg)' }, { transform: 'translate(' + dx + 'px, ' + dy + 'px) rotate(-2.5deg)' }], { duration: DRAG, easing: EASE_IN_OUT, fill: 'forwards' });
         c.moveTo(grab.x + dx, grab.y + dy, DRAG, true);
+      }, travel + 220);
 
-        // As it leaves Doing, the cards below slide up to close the gap.
-        var shift = -(from.h + 6);
-        Array.prototype.forEach.call(doingList.children, function (sib) {
-          if (sib === card) return;
-          sib.animate([{ translate: '0px 0px' }, { translate: '0px ' + shift + 'px' }], { duration: 340, delay: DRAG * 0.45, easing: EASE_OUT, fill: 'forwards' });
-        });
-      }, travel + 160);
+      // 2. The copy has left Doing: the spot moves to Done and the board rearranges.
+      later(function () {
+        var sibs = Array.prototype.slice.call(doingList.children).filter(function (el) { return el !== card; });
+        flip(sibs.concat([below]), function () {
+          doneList.appendChild(card);
+          if (count(1)) count(1).textContent = '1';
+          if (count(2)) count(2).textContent = '5';
+        }, 380);
+      }, travel + 220 + DRAG * 0.55);
 
-      // Drop: the card really moves into Done; the board settles.
+      // 3. Drop: the copy settles, the real card shows.
       later(function () {
         c.press(false);
-        card.classList.remove('is-lifted');
-        var beforeBelow = below ? rectIn(screen, below).y : 0;
-        cancelAnims(card);
-        Array.prototype.forEach.call(doingList.children, function (sib) { if (sib !== card) cancelAnims(sib); });
-        doneList.appendChild(card);
-        if (count(1)) count(1).textContent = '1';
-        if (count(2)) count(2).textContent = '5';
-        if (below) {
-          var delta = beforeBelow - rectIn(screen, below).y;
-          if (delta) below.animate([{ translate: '0px ' + delta + 'px' }, { translate: '0px 0px' }], { duration: 320, easing: EASE_OUT });
+        var g = screen._ghost;
+        if (g) {
+          g.animate([{ transform: 'translate(' + dx + 'px, ' + dy + 'px) rotate(-2.5deg)' }, { transform: 'translate(' + dx + 'px, ' + dy + 'px) rotate(0deg)' }], { duration: 160, easing: EASE_OUT, fill: 'forwards' })
+            .onfinish = function () { card.style.visibility = ''; g.remove(); if (screen._ghost === g) screen._ghost = null; };
         }
         later(function () { c.moveTo(c.x + 120, c.y + 140); }, 220);
-      }, travel + 160 + DRAG + 40);
+      }, travel + 220 + DRAG + 40);
     }, at);
-    return 760 + 1700;
+    return 760 + 1800;
   }
 
   /* ---------- switching notes ---------- */
