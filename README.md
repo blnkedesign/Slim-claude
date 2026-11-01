@@ -25,11 +25,16 @@ then visit http://localhost:8090.
 ## The hero
 
 - The window is a full 1440 × 900 Mac screen, scaled down to fit (about 948 px wide on desktop).
-- Five notes take turns, about 5.6 seconds each: photo cover + process, scrapbook gallery, dynamic text, tasks + canvas, publishing.
-- Pieces appear one by one: dynamic words, process steps, board columns. Jake's cursor wanders on the canvas.
-- In the publishing note, Sam's cursor clicks Publish: Publishing…, then Updated, the popover and the toast.
+- Five notes take turns: photo cover + process, scrapbook gallery, dynamic text, tasks + canvas, publishing.
+- Each note is written in order on one timeline: the title types, then each block arrives; dynamic words, process steps and board columns appear one by one before the next block starts. A note stays until it's done, plus a short pause.
+- Jake drags a task from Doing to Done. Sam clicks Publish: Publishing…, Updated, then the popover and the toast.
+- Cursors move like a hand: quick start, long soft landing, slightly curved paths. Notes glide in and out.
 - The dots in the corner jump to a note.
 - It pauses when the hero is off screen or the tab is hidden.
 - With "reduce motion" on, notes change with a plain fade.
 
 The five notes come from the design canvas ("Hero notes · options"). Each is a `<div class="screen">` in `index.html`.
+
+## Versions
+
+- `versions/v1/` keeps the first hero as reviewed (also tagged `hero-v1`). Open `versions/v1/index.html` to compare.

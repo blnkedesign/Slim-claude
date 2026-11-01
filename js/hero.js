@@ -1,11 +1,13 @@
-/* Slimnote hero: the app window shows one note after another, each building itself in.
+/* Slimnote hero: the app window shows one note after another, each written in order.
  *
  *  - Every note is a .screen inside .app-scale (a 1440 × 900 Mac screen, scaled to fit the window).
- *  - On its turn, the note's blocks rise in one after another and the title types itself.
- *  - [data-seq] blocks then reveal their pieces one by one (dynamic words, process steps, board columns).
- *  - The publishing note plays a little scene: Sam's cursor clicks Publish, the page goes live.
+ *  - One timeline per note: the title types, then each block arrives in turn; blocks with pieces
+ *    ([data-seq]: dynamic words, process steps, board columns) show their pieces one by one before
+ *    the next block starts.
+ *  - Then a small scene, if the note has one: Jake drags a task to Done; Sam clicks Publish.
+ *  - Cursors move like a hand: quick start, long soft landing, and a slightly curved path.
  *  - Pauses while the hero is off screen or the tab is hidden; the dots jump to a note.
- *  - With "reduce motion" on, notes still change, but with plain fades.
+ *  - With "reduce motion" on, everything appears with plain fades and the cursors stay still.
  */
 (function () {
   var root = document.querySelector('[data-hero]');
@@ -18,28 +20,43 @@
   var video = root.querySelector('.hero-video');
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  var HOLD = 5600;      // how long each note stays, unless it sets data-hold
-  var STAGGER = 90;     // between blocks
+  // Timing (ms)
+  var TYPE = 38;          // per letter of a title
+  var GAP = 260;          // between plain blocks
+  var AFTER = 2600;       // how long a finished note stays before the next
+  var MIN_HOLD = 5200;
+
+  // Easing
+  var EASE_X = 'cubic-bezier(0.7, 0, 0.18, 1)';   // sharp in, long settle
+  var EASE_Y = 'cubic-bezier(0.38, 0, 0.12, 1)';  // a touch earlier: bends the path
+  var EASE_DRAG = 'cubic-bezier(0.65, 0, 0.2, 1)';
+
   var current = -1;
   var timer = null;
   var typing = null;
-  var pending = [];     // timeouts of the note on screen, cleared when it changes
+  var pending = [];
   var visible = true;
 
   function later(fn, ms) { pending.push(setTimeout(fn, ms)); }
   function clearPending() { pending.forEach(clearTimeout); pending = []; clearInterval(typing); }
 
   /* Fit the 1440 px screen into the window. */
-  function fit() {
-    scaleBox.style.setProperty('--app-scale', (win.clientWidth / 1440).toFixed(4));
-  }
+  function fit() { scaleBox.style.setProperty('--app-scale', (win.clientWidth / 1440).toFixed(4)); }
   fit();
   if ('ResizeObserver' in window) new ResizeObserver(fit).observe(win);
   else window.addEventListener('resize', fit);
 
-  /* Which elements build in: the note's blocks (the column's children), then the side panel. */
-  function blocksOf(screen) {
-    if (screen._blocks) return screen._blocks;
+  /* Where an element sits inside its screen, in the screen's own 1440 × 900 pixels. */
+  function rectIn(screen, el) {
+    var s = screen.getBoundingClientRect();
+    var r = el.getBoundingClientRect();
+    var k = s.width / 1440 || 1;
+    return { x: (r.left - s.left) / k, y: (r.top - s.top) / k, w: r.width / k, h: r.height / k };
+  }
+
+  /* ---------- blocks ---------- */
+  function setup(screen) {
+    if (screen._blocks) return;
     var list = [];
     var card = screen.querySelector('[data-card]');
     if (card) {
@@ -50,23 +67,27 @@
         } else list.push(el);
       });
     }
-    var panel = screen.querySelector('[data-panel]');
-    if (panel) list.push(panel);
     list.forEach(function (el) { el.classList.add('b-item'); });
+    screen._blocks = list;
+    screen._panel = screen.querySelector('[data-panel]');
+    if (screen._panel) screen._panel.classList.add('b-item');
     screen.querySelectorAll('[data-late]').forEach(function (el) { el.classList.add('b-late'); });
     screen.querySelectorAll('[data-seq]').forEach(function (box) {
       Array.prototype.forEach.call(box.children, function (c) { c.classList.add('seq-item'); });
     });
-    screen._blocks = list;
-    return list;
+    var h = screen.querySelector('[data-card] h1');
+    if (h && !h.children.length) { screen._title = h; h.setAttribute('data-full', h.textContent); }
   }
 
-  function typeTitle(screen, startAt) {
-    var h = screen.querySelector('[data-card] h1');
-    if (!h || h.children.length && !h.hasAttribute('data-full')) return; // only plain-text titles type themselves
-    var full = h.getAttribute('data-full') || h.textContent;
-    h.setAttribute('data-full', full);
-    if (reduce) { h.textContent = full; return; }
+  function resetScreen(screen) {
+    screen._blocks.concat(screen._panel ? [screen._panel] : []).forEach(function (el) { el.classList.remove('b-in'); });
+    screen.querySelectorAll('.seq-item, .b-late').forEach(function (el) { el.classList.remove('seq-in', 'b-in'); });
+    if (screen._title) screen._title.textContent = screen._title.getAttribute('data-full');
+  }
+
+  function typeTitle(h, at) {
+    var full = h.getAttribute('data-full');
+    if (reduce) { h.textContent = full; return 0; }
     h.textContent = '';
     var text = document.createTextNode('');
     var caret = document.createElement('span');
@@ -75,82 +96,167 @@
     h.appendChild(caret);
     var i = 0;
     later(function () {
+      clearInterval(typing);
       typing = setInterval(function () {
         i += 1;
         text.nodeValue = full.slice(0, i);
         if (i >= full.length) {
           clearInterval(typing);
-          later(function () { if (caret.parentNode) caret.parentNode.removeChild(caret); }, 900);
+          later(function () { if (caret.parentNode) caret.parentNode.removeChild(caret); }, 700);
         }
-      }, 38);
-    }, startAt);
+      }, TYPE);
+    }, at);
+    return full.length * TYPE;
   }
 
-  /* Pieces inside [data-seq] blocks appear one by one, after their block has arrived. */
-  function revealPieces(screen, blocks) {
-    screen.querySelectorAll('[data-seq]').forEach(function (box) {
-      var step = reduce ? 0 : parseInt(box.getAttribute('data-seq'), 10) || 200;
-      var idx = blocks.findIndex(function (b) { return b === box || b.contains(box); });
-      var base = reduce ? 0 : 120 + Math.max(0, idx) * STAGGER + 350;
-      Array.prototype.forEach.call(box.children, function (c, i) {
-        c.classList.remove('seq-in');
-        later(function () { c.classList.add('seq-in'); }, base + i * step);
-      });
+  /* Lay the note out on one timeline. Returns when everything is written. */
+  function writeNote(screen) {
+    var t = reduce ? 0 : 260;
+    if (screen._panel) later(function () { screen._panel.classList.add('b-in'); }, reduce ? 0 : 120);
+
+    screen._blocks.forEach(function (el) {
+      var at = t;
+      later(function () { el.classList.add('b-in'); }, at);
+      if (reduce) return;
+
+      if (screen._title && el.contains(screen._title)) {
+        t += 220 + typeTitle(screen._title, at + 220) + 260;
+        return;
+      }
+      var boxes = el.matches('[data-seq]') ? [el] : Array.prototype.slice.call(el.querySelectorAll('[data-seq]'));
+      if (boxes.length) {
+        var s = at + 320;
+        boxes.forEach(function (box) {
+          var step = parseInt(box.getAttribute('data-seq'), 10) || 200;
+          Array.prototype.forEach.call(box.children, function (c, i) {
+            later(function () { c.classList.add('seq-in'); }, s + i * step);
+          });
+          s += box.children.length * step;
+        });
+        t = s + 200;
+        return;
+      }
+      t += GAP;
     });
+
+    if (reduce) {
+      screen.querySelectorAll('.seq-item').forEach(function (c) { later(function () { c.classList.add('seq-in'); }, 0); });
+    }
+    return t + 300;
   }
 
-  /* The publishing scene: Sam's cursor moves to Publish and clicks; the page goes live. */
+  /* ---------- cursors ---------- */
+  function Cursor(el) {
+    this.el = el;
+    this.x = 0; this.y = 0;
+    this.ax = el.querySelector('.cursor-x');
+    this.ay = el.querySelector('.cursor-y');
+  }
+  Cursor.prototype.place = function (x, y) {
+    this.ax.getAnimations().forEach(function (a) { a.cancel(); });
+    this.ay.getAnimations().forEach(function (a) { a.cancel(); });
+    this.x = x; this.y = y;
+    this.ax.style.transform = 'translateX(' + x + 'px)';
+    this.ay.style.transform = 'translateY(' + y + 'px)';
+    this.el.classList.remove('is-on', 'is-pressing');
+    this.flipNear(x);
+  };
+  Cursor.prototype.moveTo = function (x, y, ms, ex, ey) {
+    var d = Math.hypot(x - this.x, y - this.y);
+    ms = ms || Math.min(1300, 520 + d * 0.55);
+    this.ax.animate([{ transform: 'translateX(' + this.x + 'px)' }, { transform: 'translateX(' + x + 'px)' }], { duration: ms, easing: ex || EASE_X, fill: 'forwards' });
+    this.ay.animate([{ transform: 'translateY(' + this.y + 'px)' }, { transform: 'translateY(' + y + 'px)' }], { duration: ms, easing: ey || EASE_Y, fill: 'forwards' });
+    this.x = x; this.y = y;
+    this.flipNear(x);
+    return ms;
+  };
+  Cursor.prototype.flipNear = function (x) { this.el.classList.toggle('is-flipped', x > 1240); };
+  Cursor.prototype.press = function (on) { this.el.classList.toggle('is-pressing', on); };
+  function cursorOf(screen) {
+    var el = screen.querySelector('.cursor');
+    if (!el) return null;
+    if (!el._c) el._c = new Cursor(el);
+    return el._c;
+  }
+
+  /* Sam clicks Publish; the page goes live. */
   var CHECK = '<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>';
-  function publishScene(screen, startAt) {
-    var cur = screen.querySelector('[data-cursor]');
+  function publishScene(screen, at) {
     var btn = screen.querySelector('[data-pub]');
+    var c = cursorOf(screen);
+    if (!btn || !c || screen.getAttribute('data-note') !== 'publish') return 0;
     var label = screen.querySelector('[data-livelabel]');
     var late = screen.querySelectorAll('.b-late');
-    if (!cur || !btn) return false;
 
-    // Back to "not published yet".
     btn.classList.remove('is-busy', 'is-pressed');
     btn.textContent = 'Publish';
     if (label) label.style.opacity = '0';
-    late.forEach(function (el) { el.classList.remove('b-in'); });
-    cur.classList.remove('is-on', 'is-pressing');
-    cur.style.transition = 'none';
-    cur.style.transform = 'translate(760px, 640px)';
-    void cur.offsetWidth;
-    cur.style.transition = '';
+    c.place(720, 660);
 
-    function target() {
-      var s = screen.getBoundingClientRect();
-      var r = btn.getBoundingClientRect();
-      var k = s.width / 1440 || 1;
-      return { x: (r.left - s.left) / k + (r.width / k) * 0.42, y: (r.top - s.top) / k + (r.height / k) * 0.5 };
-    }
     function goLive() {
       btn.classList.remove('is-busy');
       btn.innerHTML = CHECK + 'Updated';
       if (label) label.style.opacity = '1';
-      late.forEach(function (el, i) { later(function () { el.classList.add('b-in'); }, i * 350); });
+      late.forEach(function (el, i) { later(function () { el.classList.add('b-in'); }, i * 380); });
     }
+    if (reduce) { later(goLive, at); return 1500; }
 
-    if (reduce) { later(goLive, startAt); return true; }
-
-    later(function () { cur.classList.add('is-on'); }, startAt);
-    later(function () { var t = target(); cur.style.transform = 'translate(' + t.x + 'px, ' + t.y + 'px)'; }, startAt + 250);
-    later(function () { cur.classList.add('is-pressing'); btn.classList.add('is-pressed'); }, startAt + 1450);
+    var tx = 0, ty = 0;
+    later(function () { c.el.classList.add('is-on'); }, at);
+    var travel = 1100;
     later(function () {
-      cur.classList.remove('is-pressing');
-      btn.classList.remove('is-pressed');
-      btn.classList.add('is-busy');
-      btn.textContent = 'Publishing…';
-    }, startAt + 1620);
-    later(goLive, startAt + 2500);
-    later(function () {
-      var t = target();
-      cur.style.transform = 'translate(' + (t.x - 150) + 'px, ' + (t.y + 300) + 'px)';
-    }, startAt + 3100);
-    return true;
+      var b = rectIn(screen, btn); // measured now, once the note has settled
+      tx = b.x + b.w * 0.4; ty = b.y + b.h * 0.55;
+      c.moveTo(tx, ty, travel);
+    }, at + 200);
+    var click = at + 200 + travel + 140;
+    later(function () { c.press(true); btn.classList.add('is-pressed'); }, click);
+    later(function () { c.press(false); btn.classList.remove('is-pressed'); btn.classList.add('is-busy'); btn.textContent = 'Publishing…'; }, click + 150);
+    later(goLive, click + 1050);
+    later(function () { c.moveTo(tx - 170, ty + 330, 1150); }, click + 1500);
+    return click + 2900 - at;
   }
 
+  /* Jake drags a task from Doing to Done. */
+  function dragScene(screen, at) {
+    var card = screen.querySelector('[data-drag]');
+    var c = cursorOf(screen);
+    if (!card || !c) return 0;
+    card.getAnimations().forEach(function (a) { a.cancel(); });
+    card.classList.remove('is-lifted');
+    c.place(1010, 640);
+    if (reduce) return 0;
+
+    var board = card.closest('[data-seq]');
+    var done = board && board.children[2];
+    var list = done && done.children[1];
+    if (!list) return 0;
+
+    var from, grab;
+    later(function () { c.el.classList.add('is-on'); }, at);
+    var travel = 1000;
+    later(function () {
+      from = rectIn(screen, card); // measured now, once the note has settled
+      grab = { x: from.x + from.w * 0.3, y: from.y + from.h * 0.5 };
+      c.moveTo(grab.x, grab.y, travel);
+    }, at + 200);
+    var lift = at + 200 + travel + 120;
+    later(function () { c.press(true); card.classList.add('is-lifted'); }, lift);
+
+    var drag = 1050;
+    later(function () {
+      var last = rectIn(screen, list.lastElementChild);
+      var dx = last.x - from.x;
+      var dy = last.y + last.h + 6 - from.y;
+      card.animate([{ translate: '0px 0px' }, { translate: dx + 'px ' + dy + 'px' }], { duration: drag, easing: EASE_DRAG, fill: 'forwards' });
+      c.moveTo(grab.x + dx, grab.y + dy, drag, EASE_DRAG, EASE_DRAG);
+    }, lift + 180);
+    later(function () { c.press(false); card.classList.remove('is-lifted'); }, lift + 180 + drag + 60);
+    later(function () { c.moveTo(c.x + 120, c.y + 150, 1000); }, lift + 180 + drag + 500);
+    return lift + 180 + drag + 1600 - at;
+  }
+
+  /* ---------- switching notes ---------- */
   function show(n) {
     var next = screens[(n + screens.length) % screens.length];
     if (next === screens[current]) return;
@@ -161,48 +267,38 @@
     screens.forEach(function (s) { s.setAttribute('aria-hidden', s === next ? 'false' : 'true'); });
     dots.forEach(function (d, i) { d.setAttribute('aria-current', i === current ? 'true' : 'false'); });
 
-    var blocks = blocksOf(next);
-    blocks.forEach(function (el) { el.classList.remove('b-in'); el.style.transitionDelay = ''; });
+    setup(next);
+    resetScreen(next);
     void next.offsetWidth;
 
-    if (prev) prev.classList.remove('is-on');
+    if (prev) {
+      prev.classList.remove('is-on');
+      prev.classList.add('is-leaving');
+      later(function () { prev.classList.remove('is-leaving'); }, 800);
+    }
     next.classList.add('is-on');
 
-    blocks.forEach(function (el, i) {
-      el.style.transitionDelay = (reduce ? 0 : 120 + i * STAGGER) + 'ms';
-      el.classList.add('b-in');
-    });
-    var builtAt = reduce ? 0 : 120 + blocks.length * STAGGER + 500;
-
-    revealPieces(next, blocks);
-    if (!publishScene(next, builtAt)) {
-      next.querySelectorAll('.b-late').forEach(function (el, i) {
-        el.classList.remove('b-in');
-        later(function () { el.classList.add('b-in'); }, builtAt + i * 450);
-      });
+    var written = writeNote(next);
+    var scene = publishScene(next, written) || dragScene(next, written);
+    if (!scene) {
+      next.querySelectorAll('.b-late').forEach(function (el, i) { later(function () { el.classList.add('b-in'); }, written + i * 450); });
     }
-    typeTitle(next, 160);
-  }
-
-  function holdOf(screen) {
-    return parseInt(screen && screen.getAttribute('data-hold'), 10) || HOLD;
+    next._hold = Math.max(MIN_HOLD, written + scene + AFTER);
   }
 
   function schedule() {
     clearTimeout(timer);
     if (!visible || document.hidden) return;
-    timer = setTimeout(function () { show(current + 1); schedule(); }, holdOf(screens[current]));
+    var s = screens[current];
+    timer = setTimeout(function () { show(current + 1); schedule(); }, (s && s._hold) || MIN_HOLD);
   }
 
-  dots.forEach(function (d, i) {
-    d.addEventListener('click', function () { show(i); schedule(); });
-  });
+  dots.forEach(function (d, i) { d.addEventListener('click', function () { show(i); schedule(); }); });
 
   root.classList.add('anim');
   show(0);
   schedule();
 
-  // Pause when the hero leaves the screen or the tab is hidden.
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(function (entries) {
       visible = entries[0].isIntersecting;
