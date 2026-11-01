@@ -1,0 +1,264 @@
+/* Slimnote website — base styles and the hero.
+   Sizes follow Figma "Notes App" › Frame 100 (1440 wide). */
+
+:root {
+  --ink: #0d0d0d;
+  --ink-2: #5d5d5d;
+  --muted: #8f8f8f;
+  --surface: #ffffff;
+  --action: #17191f;
+  --quiet: #f0f0f0;
+  --lime: #d2fc6c;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Lora", ui-serif, Georgia, serif;
+  --font-body: "Google Sans Flex", "Google Sans", var(--font-ui);
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; }
+img { display: block; }
+
+/* ---------------- Nav ---------------- */
+.nav { background: var(--surface); }
+.nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 48px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.nav-logo img { width: 95px; height: auto; }
+.nav-links { flex: 1; display: flex; justify-content: center; gap: 4px; }
+.nav-links a, .nav-signin {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  letter-spacing: -0.15px;
+  text-decoration: none;
+  color: var(--ink-2);
+  transition: background-color 150ms ease;
+}
+.nav-signin { color: var(--ink); }
+.nav-right { display: flex; align-items: center; gap: 8px; }
+.btn-quiet {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 16px;
+  border-radius: 8px;
+  background: var(--quiet);
+  color: #141416;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.15px;
+  text-decoration: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .nav-links a:hover, .nav-signin:hover { background: rgba(0, 0, 0, 0.04); }
+}
+
+/* Buttons feel the press */
+.press { transition: transform 160ms var(--ease-out); }
+.press:active { transform: scale(0.97); }
+
+/* ---------------- Hero ---------------- */
+.hero { padding: 0 16px; }
+.hero-card {
+  position: relative;
+  max-width: 1408px;
+  height: 825px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #6fa8d8 url("../assets/video/hero-poster.jpg") center / cover no-repeat;
+  isolation: isolate;
+}
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+}
+.hero-shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.2) 1.5%, rgba(51, 51, 51, 0) 50%, rgba(102, 102, 102, 0.07) 100%);
+  pointer-events: none;
+}
+.hero-content {
+  padding-top: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 35px;
+}
+.hero-copy {
+  width: min(870px, 100% - 32px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
+  text-align: center;
+  color: #ffffff;
+}
+.hero-text { display: flex; flex-direction: column; gap: 5px; align-items: center; }
+.hero-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 64px;
+  line-height: 1.12;
+  letter-spacing: -1.92px;
+}
+.hero-sub {
+  margin: 0;
+  max-width: 540px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.35;
+}
+.btn-store {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 40px;
+  padding: 0 19px;
+  border-radius: 9.4px;
+  background: var(--action);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.27px;
+  text-decoration: none;
+}
+.btn-store img { width: 16.7px; height: 16.7px; margin: 0 1px 1px; }
+
+/* The app window: a 1440 × 900 Mac screen shown at 948 px wide (scale set by hero.js). */
+.app-window {
+  position: relative;
+  width: min(948.5px, 100% - 32px);
+  aspect-ratio: 1440 / 900;
+  border-radius: 9.2px;
+  overflow: hidden;
+  background: rgba(249, 249, 249, 0.82);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.18), 0 30px 80px rgba(20, 40, 60, 0.28);
+}
+.app-scale {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1440px;
+  height: 900px;
+  transform-origin: 0 0;
+  transform: scale(var(--app-scale, 0.6587));
+}
+
+/* One screen per note, stacked; only one shows at a time. */
+.screen {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 500ms var(--ease-out), visibility 0s linear 500ms;
+}
+.screen.is-on {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 500ms var(--ease-out), visibility 0s;
+}
+.screen > div { background: transparent !important; }
+
+/* Blocks building themselves in */
+.anim .screen .b-item {
+  opacity: 0;
+  transform: translateY(14px);
+  filter: blur(3px);
+}
+.anim .screen .b-item.b-in {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  transition: opacity 500ms var(--ease-out), transform 650ms var(--ease-out), filter 450ms var(--ease-out);
+}
+.anim .screen .b-late { opacity: 0; transform: translateY(-6px) scale(0.98); transform-origin: top right; }
+.anim .screen .b-late.b-in {
+  opacity: 1;
+  transform: none;
+  transition: opacity 220ms var(--ease-out), transform 220ms var(--ease-out);
+}
+.type-caret {
+  display: inline-block;
+  width: 3px;
+  height: 0.8em;
+  margin-left: 4px;
+  vertical-align: -0.06em;
+  background: currentColor;
+  animation: caret 1s steps(1) infinite;
+}
+@keyframes caret { 50% { opacity: 0; } }
+
+/* Note picker: a small glass pill floating over the bottom of the window */
+.note-dots {
+  position: absolute;
+  right: 28px;
+  bottom: 24px;
+  z-index: 3;
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(13, 13, 13, 0.45);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+.note-dots button {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: width 300ms var(--ease-out), background-color 200ms ease;
+}
+.note-dots button[aria-current="true"] { width: 22px; background: #ffffff; }
+.note-dots button:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim .screen .b-item, .anim .screen .b-late { transform: none; filter: none; }
+  .anim .screen .b-item.b-in, .anim .screen .b-late.b-in { transition: opacity 200ms ease; }
+  .type-caret { animation: none; }
+  .press:active { transform: none; }
+}
+
+/* ---------------- Smaller screens ---------------- */
+@media (max-width: 1000px) {
+  .nav-links { display: none; }
+  .nav-inner { padding: 12px 20px; justify-content: space-between; }
+}
+@media (max-width: 760px) {
+  .hero { padding: 0 8px; }
+  .hero-card { height: auto; padding-bottom: 0; }
+  .hero-content { padding-top: 48px; gap: 28px; }
+  .hero-title { font-size: 40px; letter-spacing: -1.2px; }
+  .hero-sub { font-size: 14px; }
+  .app-window { border-radius: 8px 8px 0 0; }
+  .hero-card { padding-bottom: 64px; }
+  .note-dots { right: auto; left: 50%; bottom: 20px; transform: translateX(-50%); }
+}
