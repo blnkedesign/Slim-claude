@@ -26,6 +26,8 @@ then visit http://localhost:8090.
 
 - The window is a full 1440 × 900 Mac screen, scaled down to fit (about 948 px wide on desktop).
 - Five notes take turns, about 5.6 seconds each: photo cover + process, scrapbook gallery, dynamic text, tasks + canvas, publishing.
+- Pieces appear one by one: dynamic words, process steps, board columns. Jake's cursor wanders on the canvas.
+- In the publishing note, Sam's cursor clicks Publish: Publishing…, then Updated, the popover and the toast.
 - The dots in the corner jump to a note.
 - It pauses when the hero is off screen or the tab is hidden.
 - With "reduce motion" on, notes change with a plain fade.

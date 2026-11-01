@@ -213,6 +213,38 @@ img { display: block; }
 }
 @keyframes caret { 50% { opacity: 0; } }
 
+/* Pieces inside a block that appear one after another (dynamic words, process steps, board columns).
+   Uses the separate scale/translate properties so each piece keeps its own tilt. */
+.anim .screen .seq-item { opacity: 0; scale: 0.86; translate: 0 8px; }
+.anim .screen .seq-item.seq-in {
+  opacity: 1;
+  scale: 1;
+  translate: 0 0;
+  transition: opacity 260ms var(--ease-out), scale 380ms cubic-bezier(0.34, 1.4, 0.64, 1), translate 380ms var(--ease-out);
+}
+.blink-caret { animation: caret 1s steps(1) infinite; }
+
+/* Someone else working in the note */
+.wander { animation: wander 6s var(--ease-in-out) infinite alternate; }
+@keyframes wander {
+  0% { translate: 0 0; }
+  35% { translate: -90px -60px; }
+  70% { translate: 40px -110px; }
+  100% { translate: -30px 10px; }
+}
+
+/* Sam's cursor clicking Publish */
+[data-cursor] {
+  opacity: 0;
+  transition: transform 1100ms var(--ease-in-out), opacity 300ms ease;
+}
+[data-cursor].is-on { opacity: 1; }
+[data-cursor].is-pressing svg { scale: 0.85; transition: scale 120ms ease-out; }
+[data-cursor] svg { transition: scale 160ms ease-out; }
+[data-pub].is-pressed { transform: scale(0.96); }
+[data-pub].is-busy { background: #f0f0f0 !important; color: #8f8f8f !important; }
+[data-livelabel] { transition: opacity 300ms ease; }
+
 /* Note picker: a small glass pill floating over the bottom of the window */
 .note-dots {
   position: absolute;
@@ -243,7 +275,9 @@ img { display: block; }
 @media (prefers-reduced-motion: reduce) {
   .anim .screen .b-item, .anim .screen .b-late { transform: none; filter: none; }
   .anim .screen .b-item.b-in, .anim .screen .b-late.b-in { transition: opacity 200ms ease; }
-  .type-caret { animation: none; }
+  .type-caret, .blink-caret, .wander { animation: none; }
+  .anim .screen .seq-item { scale: 1; translate: 0 0; }
+  [data-cursor] { transition: opacity 200ms ease; }
   .press:active { transform: none; }
 }
 
