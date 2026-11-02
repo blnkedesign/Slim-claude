@@ -301,9 +301,9 @@
 
     // Back to the start.
     if (screen._ghost) { screen._ghost.remove(); screen._ghost = null; }
-    card.style.visibility = '';
+    card.style.opacity = '';
     if (card.parentElement !== doingList) doingList.insertBefore(card, doingList.firstChild);
-    [card, below].concat(Array.prototype.slice.call(doingList.children)).forEach(function (el) { if (el) cancelAnims(el); });
+    [card, below].concat(Array.prototype.slice.call(doingList.children), Array.prototype.slice.call(doneList.children)).forEach(function (el) { if (el) { cancelAnims(el); el.style.transition = ''; el.style.transform = ''; } });
     if (count(1)) count(1).textContent = '2';
     if (count(2)) count(2).textContent = '4';
     c.place(1010, 640);
@@ -317,7 +317,15 @@
       els.forEach(function (el, i) {
         if (!el) return;
         var d = (before[i] - el.getBoundingClientRect().top) / k;
-        if (Math.abs(d) > 0.5) el.animate([{ transform: 'translateY(' + d + 'px)' }, { transform: 'translateY(0)' }], { duration: ms, easing: EASE_OUT });
+        if (Math.abs(d) <= 0.5) return;
+        // A plain style transition (not el.animate): Chrome can keep a stale "hidden"
+        // on an animated element after its note has been off screen and back.
+        el.style.transition = 'none';
+        el.style.transform = 'translateY(' + d + 'px)';
+        void el.offsetWidth;
+        el.style.transition = 'transform ' + ms + 'ms ' + EASE_OUT;
+        el.style.transform = '';
+        later(function () { el.style.transition = ''; }, ms + 50);
       });
     }
 
@@ -336,7 +344,7 @@
         ghost.style.cssText += ';position: absolute; margin: 0; z-index: 30; pointer-events: none; left: ' + from.x + 'px; top: ' + from.y + 'px; width: ' + from.w + 'px; box-sizing: border-box;';
         screen.appendChild(ghost);
         screen._ghost = ghost;
-        card.style.visibility = 'hidden';
+        card.style.opacity = '0';
         ghost.animate([{ transform: 'rotate(0deg)', boxShadow: '0 0 0 1px rgba(0,0,0,0.07)' }, { transform: 'rotate(-2.5deg)', boxShadow: '0 0 0 1px rgba(0,0,0,0.07), 0 16px 32px rgba(0,0,0,0.16)' }], { duration: 160, easing: EASE_OUT, fill: 'forwards' });
       }, travel + 60);
 
@@ -367,7 +375,7 @@
         var g = screen._ghost;
         if (g) {
           g.animate([{ transform: 'translate(' + dx + 'px, ' + dy + 'px) rotate(-2.5deg)' }, { transform: 'translate(' + dx + 'px, ' + dy + 'px) rotate(0deg)' }], { duration: 160, easing: EASE_OUT, fill: 'forwards' })
-            .onfinish = function () { card.style.visibility = ''; g.remove(); if (screen._ghost === g) screen._ghost = null; };
+            .onfinish = function () { card.style.opacity = ''; g.remove(); if (screen._ghost === g) screen._ghost = null; };
         }
         later(function () { c.moveTo(c.x + 120, c.y + 140); }, 220);
       }, travel + 220 + DRAG + 40);
