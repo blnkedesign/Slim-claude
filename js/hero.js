@@ -49,6 +49,19 @@
   // The scale lives on the hero, so the window and the cursor layer above it share it.
   function fit() { root.style.setProperty('--app-scale', (win.clientWidth / 1440).toFixed(4)); }
   fit();
+  // Version 5: scale the whole inside of the card to Figma's 1408 × 871 proportions.
+  var card = root.querySelector('.hero-card');
+  function fitHero() {
+    if (!root.classList.contains('hero--fit') || window.matchMedia('(max-width: 760px)').matches) {
+      root.style.removeProperty('--hero-k');
+      return;
+    }
+    var k = Math.min(card.clientWidth / 1408, card.clientHeight / 871);
+    root.style.setProperty('--hero-k', k.toFixed(4));
+  }
+  fitHero();
+  if ('ResizeObserver' in window) new ResizeObserver(fitHero).observe(card);
+  else window.addEventListener('resize', fitHero);
   if ('ResizeObserver' in window) new ResizeObserver(fit).observe(win);
   else window.addEventListener('resize', fit);
 

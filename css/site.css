@@ -99,6 +99,20 @@ img { display: block; }
 .nav-pill .nav-links { flex: 1; display: flex; justify-content: center; gap: 4px; }
 .btn-round { border-radius: 100px; }
 
+/* Version 5: everything inside the card (headline, button, window) is laid out at
+   Figma's size (1408 × 871) and scaled as one piece to fit the card, so the window
+   always shows the same share as in Frame 106. hero.js sets --hero-k. */
+.hero--fit .hero-content {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1408px;
+  transform-origin: top center;
+  transform: translateX(-50%) scale(var(--hero-k, 1));
+}
+.hero.hero--fit .app-frame { width: 948.5px; }
+.hero.hero--fit .hero-card { min-height: 560px; }
+
 /* ---------------- Hero ---------------- */
 .hero { padding: 0 16px; }
 .hero-card {
@@ -349,6 +363,9 @@ img { display: block; }
   .hero.hero--pill { padding: 8px; }
   .hero--pill .hero-card { height: auto; min-height: 0; }
   .hero--pill .app-frame { width: calc(100% - 24px); }
+  .hero--fit .hero-content { position: static; width: auto; transform: none; }
+  .hero.hero--fit .app-frame { width: calc(100% - 24px); }
+  .hero.hero--fit .hero-card { min-height: 0; }
   .hero--pill .hero-content { padding-top: 92px; }
   .hero--pill .hero-title { font-size: 40px; letter-spacing: -1.2px; }
   .nav-pill .nav-links { display: none; }
