@@ -418,3 +418,71 @@ img { display: block; }
   .hero-card { padding-bottom: 64px; }
   .note-dots { right: auto; left: 50%; bottom: 20px; transform: translateX(-50%); }
 }
+
+/* ---------------- Blocks (Figma Frame 108): six cards, each with its own hover ---------------- */
+
+/* card */
+.blocks .card{border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:18px;transition:transform .35s cubic-bezier(.23,1,.32,1),box-shadow .35s cubic-bezier(.23,1,.32,1)}
+.blocks .card:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(0,0,0,.08)}
+.blocks .card h3{margin:0;font-size:18px;font-weight:500;letter-spacing:-.3px}
+.blocks .card p{margin:0;font-size:15px;line-height:1.5;color:#5d5d5d}
+.blocks .chips{display:flex;flex-wrap:wrap;gap:3px}
+.blocks .chip{font-size:12px;height:27px;box-sizing:border-box;display:inline-flex;align-items:center;padding:0 10px;border-radius:100px;background:rgba(255,255,255,.5);border:1px solid rgba(0,0,0,.08);color:#0d0d0d;transition:background-color .15s ease}
+.blocks .chip:hover{background:#fff}
+.blocks .chip-on{background:#17191f;border-color:#17191f;color:#fff}
+.blocks .chip-on:hover{background:#17191f}
+
+/* the picture area */
+.blocks .vis{position:relative;aspect-ratio:352/321;border-radius:18px;overflow:hidden;border:.764px solid rgba(0,0,0,.12);background:#d8d7d7 url("../assets/img/paper-grid.webp") center/cover;container-type:inline-size}
+.blocks .vis::before{content:"";position:absolute;inset:0;background:url("../assets/img/paper-noise.webp");opacity:.2;pointer-events:none}
+.blocks .panel{position:relative;aspect-ratio:352/321;box-sizing:border-box;border-radius:12px;overflow:hidden;background:#fff;border:1px solid rgba(0,0,0,.08);container-type:inline-size}
+.blocks .tag{position:absolute;z-index:3;top:17px;right:17px;height:40px;box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:3px 10px 3px 4px;border-radius:8px;border:1px solid rgba(0,0,0,.12);font-size:14px;letter-spacing:-.15px;color:#0d0d0d}
+.blocks .tag-ic{width:32px;height:32px;box-sizing:border-box;border-radius:8px;background:rgba(255,255,255,.5);border:1px solid rgba(0,0,0,.1);display:grid;place-items:center}
+
+/* motion */
+.blocks .m{transition:transform .5s cubic-bezier(.23,1,.32,1)}
+.blocks .card:hover .g-p1{transform:translate(-1.5cqw,-1.5cqw) rotate(-11deg) !important}
+.blocks .card:hover .g-p2{transform:translate(3cqw,1cqw) rotate(9deg) !important}
+.blocks .card:hover .g-t1{transform:translate(-1.5cqw,-2cqw) rotate(-15deg) !important}
+.blocks .card:hover .g-dot{transform:scale(1.25) !important}
+.blocks .lt{display:inline-block;transition:transform .45s cubic-bezier(.34,1.45,.64,1)}
+.blocks .card:hover .lt1{transform:translateY(-3cqw) rotate(-12deg) !important}
+.blocks .card:hover .lt2{transform:translateY(2cqw) rotate(10deg) !important;transition-delay:.04s}
+.blocks .card:hover .lt3{transform:translateY(-2cqw) rotate(-9deg) !important;transition-delay:.08s}
+.blocks .card:hover .lt4{transform:translateY(2.5cqw) rotate(12deg) !important;transition-delay:.12s}
+.blocks .card:hover .lt5{transform:translateY(-3cqw) rotate(-10deg) !important;transition-delay:.16s}
+.blocks .card:hover .lt6{transform:translateY(1.5cqw) rotate(8deg) !important;transition-delay:.2s}
+.blocks .card:hover .s-love{transform:translate(-50%,-50%) scale(1.08) rotate(-5deg) !important}
+.blocks .card:hover .s-bird{transform:translate(8cqw,-10cqw) rotate(-16deg) !important}
+.blocks .card:hover .s-heart{transform:rotate(-8deg) scale(1.1) !important}
+.blocks .card:hover .c-n1{transform:translate(-2cqw,-2cqw) rotate(-7deg) !important}
+.blocks .card:hover .c-n2{transform:translate(2cqw,-2cqw) rotate(6deg) !important}
+.blocks .card:hover .c-n3{transform:translate(-2cqw,2cqw) rotate(5deg) !important}
+.blocks .card:hover .c-n4{transform:translate(2cqw,2cqw) rotate(-6deg) !important}
+.blocks .card:hover .c-hub{transform:translate(-50%,-50%) scale(1.08) !important}
+/* canvas: each sticky note and the middle pill react on their own */
+.blocks .c-n1,.blocks .c-n2,.blocks .c-n3,.blocks .c-n4,.blocks .c-hub{cursor:grab;transition:transform .45s cubic-bezier(.34,1.45,.64,1),box-shadow .3s ease}
+.blocks .card .c-n1:hover{transform:translate(-2cqw,-3cqw) rotate(0deg) scale(1.12) !important;box-shadow:0 3cqw 5cqw rgba(0,0,0,.16);z-index:4}
+.blocks .card .c-n2:hover{transform:translate(2cqw,-3cqw) rotate(0deg) scale(1.12) !important;box-shadow:0 3cqw 5cqw rgba(0,0,0,.16);z-index:4}
+.blocks .card .c-n3:hover{transform:translate(-2cqw,1cqw) rotate(0deg) scale(1.12) !important;box-shadow:0 3cqw 5cqw rgba(0,0,0,.16);z-index:4}
+.blocks .card .c-n4:hover{transform:translate(2cqw,1cqw) rotate(0deg) scale(1.12) !important;box-shadow:0 3cqw 5cqw rgba(0,0,0,.16);z-index:4}
+.blocks .card .c-hub:hover{transform:translate(-50%,-50%) scale(1.18) !important;z-index:4}
+.blocks .k-move{transition:transform .6s cubic-bezier(.77,0,.175,1)}
+.blocks .card:hover .k-move{transform:translateX(calc(100% + 8px)) rotate(-2deg) !important}
+.blocks .k-txt{transition:color .3s ease .35s}
+.blocks .card:hover .k-txt{color:#6b6b6b;text-decoration:line-through}
+.blocks .k-ghost{transition:opacity .3s ease}
+.blocks .card:hover .k-ghost{opacity:0}
+.blocks .list{transition:transform 1.4s cubic-bezier(.77,0,.175,1)}
+.blocks .card:hover .list{transform:translateY(-50%) !important}
+
+.blocks .card:hover .boil{animation:fxBoil .36s steps(1) infinite}
+@keyframes fxBoil{0%{filter:url(#bj1)}33%{filter:url(#bj2)}66%{filter:url(#bj3)}}
+@media (prefers-reduced-motion: reduce){.blocks .card,.blocks .m,.blocks .lt,.blocks .k-move,.blocks .list{transition:none}.blocks .card:hover{transform:none}.blocks .boil{animation:none}}
+.blocks{background:#fff;color:#0d0d0d;padding:0 16px;font-family:var(--font-body)}
+.blocks-inner{max-width:1008px;margin:0 auto;padding:100px 0 120px;display:flex;flex-direction:column;gap:60px}
+.blocks-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.blocks-title{margin:0;font-family:Lora,Georgia,serif;font-weight:500;font-size:52px;line-height:1.08;letter-spacing:-1.5px}
+@media (max-width:1040px){.blocks-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.blocks-grid{grid-template-columns:minmax(0,1fr)}.blocks-inner{padding:64px 0 80px;gap:36px}.blocks-title{font-size:36px;letter-spacing:-1px}}
+
