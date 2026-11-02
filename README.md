@@ -44,6 +44,8 @@ The five notes come from the design canvas ("Hero notes · options"). Each is a 
 - `versions/v3/`: task board drags like the real app (works on every loop), Classic photo cards in the process.
 - `versions/v4/`: nav as a frosted pill inside the hero (Figma Frame 106); the card fills the screen and the window grows with its width.
 - `versions/v5/`: like v4, but everything inside the card scales as one piece to Figma's 1408 × 871 proportions, so the window shows the same share on any screen.
-- The main `index.html` is the latest (v6): v5 with a still landscape (`assets/img/hero-landscape.webp`) instead of the video, under the same gradient.
+- `versions/v6/`: v5 with a still landscape (`assets/img/hero-landscape.webp`) instead of the video, under the same gradient.
+- The main `index.html` is v7: v6 plus a soft vignette, the landscape darkening towards the edges (`focus-vignette`).
+- `versions/v8/`: v6 plus frosted sides and a soft glow behind the window (`focus-frost`).
 
 Open any `versions/…/index.html` to compare.
