@@ -41,6 +41,7 @@ The five notes come from the design canvas ("Hero notes · options"). Each is a 
 
 - `versions/v1/`: the first hero as reviewed.
 - `versions/v2/`: Figma cursors, typed dynamic text, squared paper (approved 1 Nov 2026).
-- The main `index.html` is the latest (v3).
+- `versions/v3/`: task board drags like the real app (works on every loop), Classic photo cards in the process.
+- The main `index.html` is the latest (v4): the nav is a frosted pill inside the hero (Figma Frame 106).
 
 Open any `versions/…/index.html` to compare.
