@@ -115,6 +115,20 @@ img { display: block; }
   -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 10%, transparent 30%, transparent 70%, #000 90%, #000 100%);
   mask-image: linear-gradient(90deg, #000 0%, #000 10%, transparent 30%, transparent 70%, #000 90%, #000 100%);
 }
+/* v7 = Figma Frame 107: the landscape zoomed in a little (as placed in Figma), only the top
+   gradient over it, and the nav pill at Figma's size (622 x 38), growing and shrinking with the hero. */
+.bg-zoom .hero-video { transform: scale(1.187); transform-origin: 50% 43%; }
+.bg-zoom .nav-pill { width: min(622px, 100% - 24px); }
+.bg-zoom.hero--fit .nav-pill {
+  top: calc(25px * var(--hero-k, 1));
+  width: 622px;
+  transform: translateX(-50%) scale(var(--hero-k, 1));
+  transform-origin: top center;
+}
+.bg-zoom .nav-pill-inner { height: 38px; }
+.bg-zoom .nav-pill .nav-logo img { width: 76px; }
+.bg-zoom .nav-pill .nav-links a, .bg-zoom .nav-pill .nav-signin { font-size: 12px; }
+.bg-zoom .nav-pill .btn-quiet { height: 28.5px; padding: 0 14.2px; font-size: 12px; }
 .focus-frost .app-frame::before {
   content: "";
   position: absolute;
@@ -162,7 +176,7 @@ img { display: block; }
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.35) 1.5%, rgba(51, 51, 51, 0) 50%, rgba(102, 102, 102, 0.07) 100%);
+  background: linear-gradient(180.18deg, rgba(0, 0, 0, 0.35) 1.5%, rgba(51, 51, 51, 0) 50.1%, rgba(102, 102, 102, 0.122) 101.7%);
   pointer-events: none;
 }
 .hero-content {
@@ -394,6 +408,7 @@ img { display: block; }
   .hero--pill .hero-content { padding-top: 92px; }
   .hero--pill .hero-title { font-size: 40px; letter-spacing: -1.2px; }
   .nav-pill .nav-links { display: none; }
+  .bg-zoom.hero--fit .nav-pill { top: 25px; width: min(622px, 100% - 24px); transform: translateX(-50%); }
   .nav-pill-inner { justify-content: space-between; }
   .hero-card { height: auto; padding-bottom: 0; }
   .hero-content { padding-top: 48px; gap: 28px; }
