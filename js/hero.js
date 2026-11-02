@@ -54,10 +54,13 @@
   function fitHero() {
     if (!root.classList.contains('hero--fit') || window.matchMedia('(max-width: 760px)').matches) {
       root.style.removeProperty('--hero-k');
+      document.documentElement.style.removeProperty('--hero-k');
       return;
     }
     var k = Math.min(card.clientWidth / 1408, card.clientHeight / 871);
     root.style.setProperty('--hero-k', k.toFixed(4));
+    // the same scale for the page, so buttons further down match the hero's size
+    document.documentElement.style.setProperty('--hero-k', k.toFixed(4));
   }
   fitHero();
   if ('ResizeObserver' in window) new ResizeObserver(fitHero).observe(card);
