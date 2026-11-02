@@ -75,8 +75,11 @@ img { display: block; }
 .press:active { transform: scale(0.97); }
 
 /* ---------------- Nav inside the hero (Figma Frame 106) ---------------- */
-.hero--pill { padding-top: 8px; }
-.hero--pill .hero-card { height: 871px; }
+/* The card fills the screen with a 16px margin all round; the window keeps
+   Figma's proportion (948 of 1408 = 67.4% of the card) and grows with it. */
+.hero.hero--pill { padding: 16px; }
+.hero--pill .hero-card { max-width: none; height: calc(100vh - 32px); height: calc(100dvh - 32px); min-height: 720px; }
+.hero--pill .app-frame { width: clamp(min(948.5px, 100% - 32px), 67.4%, 1500px); }
 .hero--pill .hero-content { padding-top: 98px; }
 .hero--pill .hero-title { font-size: 70px; letter-spacing: -2.1px; }
 .nav-pill {
@@ -343,8 +346,9 @@ img { display: block; }
 }
 @media (max-width: 760px) {
   .hero { padding: 0 8px; }
-  .hero--pill { padding-top: 8px; }
-  .hero--pill .hero-card { height: auto; }
+  .hero.hero--pill { padding: 8px; }
+  .hero--pill .hero-card { height: auto; min-height: 0; }
+  .hero--pill .app-frame { width: calc(100% - 24px); }
   .hero--pill .hero-content { padding-top: 92px; }
   .hero--pill .hero-title { font-size: 40px; letter-spacing: -1.2px; }
   .nav-pill .nav-links { display: none; }
