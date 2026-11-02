@@ -18,7 +18,7 @@
   var scaleBox = root.querySelector('.app-scale');
   var screens = Array.prototype.slice.call(root.querySelectorAll('.screen'));
   var dots = Array.prototype.slice.call(root.querySelectorAll('.note-dots button'));
-  var video = root.querySelector('.hero-video');
+  var video = root.querySelector('video.hero-video'); // only when the background is a video
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* Timing (ms) */

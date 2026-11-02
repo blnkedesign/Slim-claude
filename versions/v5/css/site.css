@@ -1,0 +1,380 @@
+/* Slimnote website — base styles and the hero.
+   Sizes follow Figma "Notes App" › Frame 100 (1440 wide). */
+
+:root {
+  --ink: #0d0d0d;
+  --ink-2: #5d5d5d;
+  --muted: #8f8f8f;
+  --surface: #ffffff;
+  --action: #17191f;
+  --quiet: #f0f0f0;
+  --lime: #d2fc6c;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-pop: cubic-bezier(0.34, 1.45, 0.64, 1);     /* a little overshoot, for word chips */
+  /* Motion: ease-out = things arriving; ease-in-out = things moving across the screen (cursors, drags); pop = chips */
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Lora", ui-serif, Georgia, serif;
+  --font-body: "Google Sans Flex", "Google Sans", var(--font-ui);
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; }
+img { display: block; }
+
+/* ---------------- Nav ---------------- */
+.nav { background: var(--surface); }
+.nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 48px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.nav-logo img { width: 95px; height: auto; }
+.nav-links { flex: 1; display: flex; justify-content: center; gap: 4px; }
+.nav-links a, .nav-signin {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  letter-spacing: -0.15px;
+  text-decoration: none;
+  color: var(--ink-2);
+  transition: background-color 150ms ease;
+}
+.nav-signin { color: var(--ink); }
+.nav-right { display: flex; align-items: center; gap: 8px; }
+.btn-quiet {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 16px;
+  border-radius: 8px;
+  background: var(--quiet);
+  color: #141416;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.15px;
+  text-decoration: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .nav-links a:hover, .nav-signin:hover { background: rgba(0, 0, 0, 0.04); }
+}
+
+/* Buttons feel the press */
+.press { transition: transform 160ms var(--ease-out); }
+.press:active { transform: scale(0.97); }
+
+/* ---------------- Nav inside the hero (Figma Frame 106) ---------------- */
+/* The card fills the screen with a 16px margin all round; the window keeps
+   Figma's proportion (948 of 1408 = 67.4% of the card) and grows with it. */
+.hero.hero--pill { padding: 16px; }
+.hero--pill .hero-card { max-width: none; height: calc(100vh - 32px); height: calc(100dvh - 32px); min-height: 720px; }
+.hero--pill .app-frame { width: clamp(min(948.5px, 100% - 32px), 67.4%, 1500px); }
+.hero--pill .hero-content { padding-top: 98px; }
+.hero--pill .hero-title { font-size: 70px; letter-spacing: -2.1px; }
+.nav-pill {
+  position: absolute;
+  top: 25px;
+  left: 50%;
+  z-index: 5;
+  width: min(692px, 100% - 24px);
+  transform: translateX(-50%);
+  border-radius: 100px;
+  background: rgba(249, 249, 249, 0.67);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+}
+.nav-pill-inner { display: flex; align-items: center; gap: 24px; height: 45px; padding: 0 8px 0 12px; }
+.nav-pill .nav-logo img { width: 84px; height: auto; }
+.nav-pill .nav-links { flex: 1; display: flex; justify-content: center; gap: 4px; }
+.btn-round { border-radius: 100px; }
+
+/* Version 5: everything inside the card (headline, button, window) is laid out at
+   Figma's size (1408 × 871) and scaled as one piece to fit the card, so the window
+   always shows the same share as in Frame 106. hero.js sets --hero-k. */
+.hero--fit .hero-content {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1408px;
+  transform-origin: top center;
+  transform: translateX(-50%) scale(var(--hero-k, 1));
+}
+.hero.hero--fit .app-frame { width: 948.5px; }
+.hero.hero--fit .hero-card { min-height: 560px; }
+
+/* ---------------- Hero ---------------- */
+.hero { padding: 0 16px; }
+.hero-card {
+  position: relative;
+  max-width: 1408px;
+  height: 825px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #6fa8d8 url("../../../assets/video/hero-poster.jpg") center / cover no-repeat;
+  isolation: isolate;
+}
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+}
+.hero-shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.2) 1.5%, rgba(51, 51, 51, 0) 50%, rgba(102, 102, 102, 0.07) 100%);
+  pointer-events: none;
+}
+.hero-content {
+  padding-top: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 35px;
+}
+.hero-copy {
+  width: min(870px, 100% - 32px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
+  text-align: center;
+  color: #ffffff;
+}
+.hero-text { display: flex; flex-direction: column; gap: 5px; align-items: center; }
+.hero-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 64px;
+  line-height: 1.12;
+  letter-spacing: -1.92px;
+}
+.hero-sub {
+  margin: 0;
+  max-width: 540px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.35;
+}
+.btn-store {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 40px;
+  padding: 0 19px;
+  border-radius: 9.4px;
+  background: var(--action);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.27px;
+  text-decoration: none;
+}
+.btn-store img { width: 16.7px; height: 16.7px; margin: 0 1px 1px; }
+
+/* The app window: a 1440 × 900 Mac screen shown at 948 px wide (scale set by hero.js).
+   .app-frame holds the window and, on top, an unclipped layer for cursors. */
+.app-frame { position: relative; width: min(948.5px, 100% - 32px); }
+.cursor-layer { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
+.cursor-scale { position: absolute; left: 0; top: 0; width: 1440px; height: 900px; transform-origin: 0 0; transform: scale(var(--app-scale, 0.6587)); }
+.app-window {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1440 / 900;
+  border-radius: 9.2px;
+  overflow: hidden;
+  background: rgba(249, 249, 249, 0.82);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.18), 0 30px 80px rgba(20, 40, 60, 0.28);
+}
+.app-scale {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1440px;
+  height: 900px;
+  transform-origin: 0 0;
+  transform: scale(var(--app-scale, 0.6587));
+}
+
+/* One screen per note, stacked; only one shows at a time. */
+.screen {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  translate: 0 22px;
+  scale: 1.012;
+  transition: opacity 420ms var(--ease-in-out), translate 420ms var(--ease-in-out), scale 420ms var(--ease-in-out), filter 420ms var(--ease-in-out), visibility 0s linear 420ms;
+}
+.screen.is-on {
+  opacity: 1;
+  visibility: visible;
+  translate: 0 0;
+  scale: 1;
+  transition: opacity 500ms var(--ease-out) 80ms, translate 700ms var(--ease-out) 80ms, scale 700ms var(--ease-out) 80ms, visibility 0s;
+}
+.screen.is-leaving { translate: 0 -14px; scale: 0.99; filter: blur(2px); }
+.screen > div { background: transparent !important; }
+
+/* Blocks building themselves in */
+.anim .screen .b-item {
+  opacity: 0;
+  transform: translateY(16px);
+  filter: blur(3px);
+}
+.anim .screen .b-item.b-in {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  transition: opacity 380ms var(--ease-out), transform 650ms var(--ease-out), filter 380ms var(--ease-out);
+}
+.anim .screen .b-late { opacity: 0; transform: translateY(-6px) scale(0.98); transform-origin: top right; }
+.anim .screen .b-late.b-in {
+  opacity: 1;
+  transform: none;
+  transition: opacity 220ms var(--ease-out), transform 220ms var(--ease-out);
+}
+.type-caret {
+  display: inline-block;
+  width: 3px;
+  height: 0.8em;
+  margin-left: 4px;
+  vertical-align: -0.06em;
+  background: currentColor;
+  animation: caret 1s steps(1) infinite;
+}
+@keyframes caret { 50% { opacity: 0; } }
+
+/* Pieces inside a block that appear one after another (dynamic words, process steps, board columns).
+   Uses the separate scale/translate properties so each piece keeps its own tilt. */
+.anim .screen .seq-item { opacity: 0; scale: 0.82; translate: 0 10px; }
+.anim .screen .seq-item.seq-in {
+  opacity: 1;
+  scale: 1;
+  translate: 0 0;
+  transition: opacity 200ms var(--ease-out), scale 380ms var(--ease-pop), translate 420ms var(--ease-out);
+}
+.blink-caret { animation: caret 1s steps(1) infinite; }
+/* Dynamic text being typed: each word shows as its letters arrive */
+.anim .screen [data-typewords] > * { min-width: 0.5em; }
+.anim .screen [data-typewords] > .is-typing::after {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.85em;
+  margin-left: 3px;
+  vertical-align: -0.08em;
+  background: currentColor;
+}
+
+/* Cursors of people working in the note (Figma "Notes App" › Frame 100 › Frame 106).
+   Drawn at page size: the body is scaled back up against the window's shrink, so they
+   look the same as in Figma. x and y travel on slightly different curves, so paths bend. */
+.cursor { position: absolute; left: 0; top: 0; z-index: 20; pointer-events: none; opacity: 0; transition: opacity 200ms ease; }
+.cursor.is-on { opacity: 1; }
+.cursor-x, .cursor-y { will-change: transform; }
+.cursor-body { position: relative; margin: -7px 0 0 -7px; transform-origin: 7px 7px; scale: calc(0.78 / var(--app-scale, 0.6587)); }
+.cursor-arrow { display: block; width: 27.4px; height: 28.4px; transform-origin: 7px 7px; transition: scale 160ms var(--ease-out); }
+.cursor.is-pressing .cursor-arrow { scale: 0.82; transition-duration: 80ms; }
+.cursor-tag {
+  position: absolute;
+  left: 22px;
+  top: 22px;
+  padding: 8px 16px;
+  border-radius: 24px;
+  font-family: "Inter", var(--font-ui);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  white-space: nowrap;
+}
+.cursor-tag.is-cyan { background: #41e8ff; color: #000000; }
+.cursor-tag.is-pink { background: #ff5ad7; color: #ffffff; }
+.cursor-tag.is-blue { background: #7cd4fd; color: rgba(0, 0, 0, 0.8); }
+[data-pub] { transition: background-color 200ms ease, color 200ms ease, transform 160ms var(--ease-out); }
+[data-pub].is-pressed { transform: scale(0.95); }
+[data-pub].is-busy { background: #f0f0f0 !important; color: #8f8f8f !important; }
+[data-livelabel] { transition: opacity 400ms ease; }
+[data-drag] { position: relative; z-index: 5; transition: box-shadow 200ms ease, rotate 260ms var(--ease-out); }
+[data-place] { position: relative; z-index: 6; }
+[data-drag].is-lifted { rotate: -2.5deg; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.07), 0 16px 32px rgba(0, 0, 0, 0.16); }
+
+/* Note picker: a small glass pill floating over the bottom of the window */
+.note-dots {
+  position: absolute;
+  right: 28px;
+  bottom: 24px;
+  z-index: 3;
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(13, 13, 13, 0.45);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+.note-dots button {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: width 300ms var(--ease-out), background-color 200ms ease;
+}
+.note-dots button[aria-current="true"] { width: 22px; background: #ffffff; }
+.note-dots button:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim .screen .b-item, .anim .screen .b-late { transform: none; filter: none; }
+  .anim .screen .b-item.b-in, .anim .screen .b-late.b-in { transition: opacity 200ms ease; }
+  .type-caret, .blink-caret { animation: none; }
+  .screen, .screen.is-on { translate: 0 0; scale: 1; }
+  .anim .screen .seq-item { scale: 1; translate: 0 0; }
+  .press:active { transform: none; }
+}
+
+/* ---------------- Smaller screens ---------------- */
+@media (max-width: 1000px) {
+  .nav-links { display: none; }
+  .nav-inner { padding: 12px 20px; justify-content: space-between; }
+}
+@media (max-width: 760px) {
+  .hero { padding: 0 8px; }
+  .hero.hero--pill { padding: 8px; }
+  .hero--pill .hero-card { height: auto; min-height: 0; }
+  .hero--pill .app-frame { width: calc(100% - 24px); }
+  .hero--fit .hero-content { position: static; width: auto; transform: none; }
+  .hero.hero--fit .app-frame { width: calc(100% - 24px); }
+  .hero.hero--fit .hero-card { min-height: 0; }
+  .hero--pill .hero-content { padding-top: 92px; }
+  .hero--pill .hero-title { font-size: 40px; letter-spacing: -1.2px; }
+  .nav-pill .nav-links { display: none; }
+  .nav-pill-inner { justify-content: space-between; }
+  .hero-card { height: auto; padding-bottom: 0; }
+  .hero-content { padding-top: 48px; gap: 28px; }
+  .hero-title { font-size: 40px; letter-spacing: -1.2px; }
+  .hero-sub { font-size: 14px; }
+  .app-window { border-radius: 8px 8px 0 0; }
+  .hero-card { padding-bottom: 64px; }
+  .note-dots { right: auto; left: 50%; bottom: 20px; transform: translateX(-50%); }
+}

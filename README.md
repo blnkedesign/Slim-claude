@@ -19,7 +19,7 @@ then visit http://localhost:8090.
 | `index.html` | The page. Right now: the nav and the hero. |
 | `css/site.css` | All styles. Sizes follow Figma "Notes App" › Frame 100 (1440 wide). |
 | `js/hero.js` | The hero: shows one note after another in the Mac window, each building itself in. |
-| `assets/video/hero.mp4` | The landscape background video (with `hero-poster.jpg` as its first frame). |
+| `assets/img/hero-landscape.webp` | The hero background (v6). The video (`assets/video/hero.mp4`) is kept for the earlier versions. |
 | `assets/img/` | Logo, photos and stickers used by the notes in the window. |
 
 ## The hero
@@ -43,6 +43,7 @@ The five notes come from the design canvas ("Hero notes · options"). Each is a 
 - `versions/v2/`: Figma cursors, typed dynamic text, squared paper (approved 1 Nov 2026).
 - `versions/v3/`: task board drags like the real app (works on every loop), Classic photo cards in the process.
 - `versions/v4/`: nav as a frosted pill inside the hero (Figma Frame 106); the card fills the screen and the window grows with its width.
-- The main `index.html` is the latest (v5): like v4, but everything inside the card scales as one piece to Figma's 1408 × 871 proportions, so the window shows the same share on any screen.
+- `versions/v5/`: like v4, but everything inside the card scales as one piece to Figma's 1408 × 871 proportions, so the window shows the same share on any screen.
+- The main `index.html` is the latest (v6): v5 with a still landscape (`assets/img/hero-landscape.webp`) instead of the video, under the same gradient.
 
 Open any `versions/…/index.html` to compare.
