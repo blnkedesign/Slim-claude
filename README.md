@@ -55,6 +55,8 @@ The five notes come from the design canvas ("Hero notes · options"). Each is a 
 - `versions/v7/`: the hero matched to Figma Frame 107 (before the Blocks section was added).
 - The main `index.html` is v7 plus the Blocks section. v7 (Figma Frame 107): the landscape zoomed in as placed in Figma, only the top gradient over it, and the nav pill at Figma's size (622 × 38), scaling with the hero.
 - `versions/v9/`: v7 with the Figma Frame 108 Blocks cards (hover animations) under the hero.
+- `versions/v10/`: the page before Frame 118 (pill menu, Frame 107 hero, Blocks in action).
+- The main `index.html` is v11 (Figma Frame 118): open menu across the top (logo, Live pages · Blocks · Spaces · Pricing, Sign in, Get Started), the new landscape `assets/img/hero-landscape-2.webp` with a blue fade behind the menu, a bigger title with "loud notes" in bold, and a blue "Get for Mac" button. The card keeps Figma's 1408 × 1127 shape and the app window hangs a little below it.
 - `versions/v8/`: v6 plus frosted sides and a soft glow behind the window (`focus-frost`).
 
 Open any `versions/…/index.html` to compare.

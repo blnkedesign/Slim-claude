@@ -550,3 +550,46 @@ img { display: block; }
 .showcase-head .btn-store{margin-top:6px;zoom:var(--hero-k,1)}
 @media (max-width:640px){.showcase-inner{padding:72px 0 88px;gap:44px}.showcase-title{font-size:38px;letter-spacing:-1px}.showcase-head p{font-size:17px !important}}
 
+
+/* ---------------- Hero v11 = Figma Frame 118 ----------------
+   The card keeps Figma's 1408 x 1127 shape and everything inside scales with its width (--hero-k),
+   so the app window hangs a little below the card. Open menu across the top, new landscape,
+   a blue fade behind the menu, a bigger title and a blue "Get for Mac" button. */
+.f118 .hero-card{height:auto;min-height:0;aspect-ratio:1408/1127;overflow:visible;background:#2f8fd6}
+.hero-bg{position:absolute;inset:0;z-index:-1;border-radius:16px;overflow:hidden;pointer-events:none}
+.f118 .hero-video{position:absolute;left:-22.16%;top:-6.08%;width:144.32%;height:110.51%;max-width:none;inset:auto;object-fit:cover;transform:none}
+.f118 .hero-shade{background:linear-gradient(179.24deg,rgba(7,84,131,.285) .93%,rgba(51,51,51,0) 54.72%,rgba(102,102,102,.62) 110.36%)}
+.hero-topfade{position:absolute;left:0;right:0;top:0;height:calc(204px * var(--hero-k,1));background:linear-gradient(180deg,rgba(18,119,176,.8) 0%,rgba(39,141,189,.41) 50%,rgba(51,179,204,.04) 94%,rgba(51,179,204,0) 100%)}
+
+.nav-bar{position:absolute;z-index:5;top:calc(25px * var(--hero-k,1));left:50%;width:1328px;transform:translateX(-50%) scale(var(--hero-k,1));transform-origin:top center}
+.nav-bar-inner{position:relative;display:flex;align-items:center;justify-content:space-between;height:38px}
+.nav-bar .nav-logo img{display:block;width:95px;height:auto}
+.nav-bar .nav-links{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;gap:4px}
+.nav-bar .nav-links a,.nav-bar .nav-signin{padding:8px 12px;border-radius:8px;font-family:var(--font-ui);font-size:13px;letter-spacing:-.15px;color:#dbdbdb;text-decoration:none;transition:color .15s ease,background-color .15s ease}
+.nav-bar .nav-right{display:flex;align-items:center;gap:8px}
+.nav-cta{display:inline-flex;align-items:center;height:28.5px;padding:0 14.2px;border-radius:89px;background:#f0f0f0;color:#141416;font-family:var(--font-ui);font-size:13px;font-weight:500;letter-spacing:-.13px;text-decoration:none;transition:background-color .15s ease}
+@media (hover:hover){.nav-bar .nav-links a:hover,.nav-bar .nav-signin:hover{color:#fff;background:rgba(255,255,255,.1)}.nav-cta:hover{background:#fff}}
+
+.f118.hero--pill .hero-content{padding-top:156px}
+.f118 .hero-copy{gap:30.86px}
+.f118 .hero-text{gap:12px}
+.f118 .hero-title{font-weight:400;font-size:86.4px;line-height:1.12;letter-spacing:-2.59px}
+.f118 .hero-title b{font-weight:600}
+.f118 .hero-sub{max-width:603px;font-size:17.28px;line-height:1.3}
+.f118.hero--fit .hero-content{gap:80px}
+.hero.hero--fit.f118 .app-frame{width:971px}
+
+.btn-mac{position:relative;isolation:isolate;overflow:hidden;justify-content:center;gap:3.7px;min-width:164px;height:47.24px;padding:0 20.5px;border-radius:10px;background:#06476e;font-size:14.95px;letter-spacing:-.29px}
+.btn-mac::before{content:"";position:absolute;z-index:-1;left:50%;top:5px;width:140px;height:137px;border-radius:50%;background:rgba(9,106,165,.86);filter:blur(25px);transform:translateX(-50%)}
+.btn-mac img{width:17.9px;height:17.9px}
+
+@media (max-width:760px){
+  .f118 .hero-card{aspect-ratio:auto}
+  .nav-bar{top:16px;left:12px;right:12px;width:auto;transform:none}
+  .nav-bar .nav-links{display:none}
+  .f118.hero--pill .hero-content{padding-top:92px}
+  .f118 .hero-title{font-size:42px;letter-spacing:-1.2px}
+  .f118 .hero-sub{font-size:15px}
+  .hero.hero--fit.f118 .app-frame{width:calc(100% - 24px)}
+  .f118.hero--fit .hero-content{gap:36px}
+}
