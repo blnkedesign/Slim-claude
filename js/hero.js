@@ -454,3 +454,16 @@
   }
   document.addEventListener('visibilitychange', schedule);
 })();
+
+// "Get for Mac" buttons: the light inside drifts gently towards the cursor.
+(function () {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  document.querySelectorAll('.btn-mac').forEach(function (b) {
+    b.addEventListener('pointermove', function (e) {
+      var r = b.getBoundingClientRect();
+      b.style.setProperty('--dx', ((e.clientX - r.left - r.width / 2) * 0.55).toFixed(1) + 'px');
+      b.style.setProperty('--dy', ((e.clientY - r.top - r.height / 2) * 0.6 - 6).toFixed(1) + 'px');
+    });
+    b.addEventListener('pointerleave', function () { b.style.removeProperty('--dx'); b.style.removeProperty('--dy'); });
+  });
+})();

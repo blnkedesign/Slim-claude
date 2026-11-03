@@ -580,13 +580,10 @@ img { display: block; }
 .hero.hero--fit.f118 .app-frame{width:971px}
 
 .btn-mac{position:relative;isolation:isolate;overflow:hidden;justify-content:center;gap:3.7px;min-width:164px;height:42px;padding:0 20.5px;border-radius:10px;background:#06476e;font-size:14.95px;letter-spacing:-.29px}
-.btn-mac::before{content:"";position:absolute;z-index:-1;left:50%;top:5px;width:140px;height:137px;border-radius:50%;background:rgba(9,106,165,.86);filter:blur(25px);transform:translateX(-50%);transition:transform .45s cubic-bezier(.23,1,.32,1),background-color .45s cubic-bezier(.23,1,.32,1)}
-.btn-mac{transition:box-shadow .45s cubic-bezier(.23,1,.32,1)}
-@media (hover:hover){
-  .btn-mac:hover::before{transform:translate(-50%,-14px) scale(1.18);background:rgba(28,140,214,.95)}
-  .btn-mac:hover{box-shadow:0 6px 22px rgba(9,106,165,.35)}
-}
-@media (prefers-reduced-motion:reduce){.btn-mac,.btn-mac::before{transition:none}}
+.btn-mac::before{content:"";position:absolute;z-index:-1;left:50%;top:5px;width:140px;height:137px;border-radius:50%;background:rgba(9,106,165,.86);filter:blur(25px);transform:translate(calc(-50% + var(--dx,0px)),var(--dy,0px));transition:transform .35s cubic-bezier(.23,1,.32,1),background-color .35s ease}
+/* hover: the inner light gets a little brighter and drifts towards the cursor (js/hero.js sets --dx/--dy) */
+@media (hover:hover){.btn-mac:hover::before{background:rgba(18,121,186,.9)}}
+@media (prefers-reduced-motion:reduce){.btn-mac::before{transition:none;transform:translateX(-50%)}}
 .btn-mac img{width:17.9px;height:17.9px}
 
 @media (max-width:760px){
